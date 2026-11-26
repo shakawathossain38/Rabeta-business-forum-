@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#123c32">
+<title>RABETA | Rabeta Business Forum</title>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f6f4;
+  color: #26352f;
+}
+
+header {
+  background: #123c32;
+  color: white;
+  padding: 25px 15px;
+  text-align: center;
+}
+
+.logo {
+  font-size: 30px;
+  font-weight: bold;
+  letter-spacing: 2px;
+}
+
+header h2 {
+  font-size: 19px;
+  margin-top: 8px;
+}
+
+header p {
+  font-size: 13px;
+  margin-top: 8px;
+  color: #d4e8dc;
+}
+
+.container {
+  max-width: 500px;
+  margin: 25px auto;
+  padding: 15px;
+}
+
+.card {
+  background: white;
+  padding: 22px;
+  border-radius: 14px;
+  box-shadow: 0 3px 15px #00000012;
+  margin-bottom: 18px;
+}
+
+.card h3 {
+  color: #123c32;
+  text-align: center;
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  margin: 12px 0 6px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  border: 1px solid #d5ddd8;
+  border-radius: 8px;
+  outline: none;
+  font-size: 15px;
+}
+
+input:focus {
+  border-color: #176b50;
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 18px;
+  background: #176b50;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+footer {
+  text-align: center;
+  padding: 20px;
+  color: #68756e;
+  font-size: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">RABETA</div>
+  <h2>রাবেতা বিজনেস ফোরাম</h2>
+  <p>প্রতিষ্ঠা : ২০২৬ খ্রিস্টাব্দ</p>
+</header>
+
+<main class="container">
+
+  <section class="card">
+    <h3>স্বাগতম</h3>
+    <p style="text-align:center;line-height:1.8">
+      রাবেতা বিজনেস ফোরামের
+      অফিসিয়াল ডিজিটাল প্ল্যাটফর্মে
+      আপনাকে স্বাগতম।
+    </p>
+  </section>
+
+  <section class="card">
+    <h3>লগইন করুন</h3>
+
+    <form id="loginForm">
+
+      <label for="email">ইমেইল / সদস্য আইডি</label>
+      <input
+        type="text"
+        id="email"
+        placeholder="আপনার ইমেইল বা সদস্য আইডি"
+        required
+      >
+
+      <label for="password">পাসওয়ার্ড</label>
+      <input
+        type="password"
+        id="password"
+        placeholder="পাসওয়ার্ড লিখুন"
+        required
+      >
+
+      <button type="submit">লগইন</button>
+
+      <p id="loginMsg"
+         style="text-align:center;margin-top:12px">
+      </p>
+
+    </form>
+  </section>
+
+</main>
+
+<footer>
+  © 2026 RABETA
+  <br>
+  Rabeta Business Forum
+  <br>
+  সকল স্বত্ব সংরক্ষিত।
+</footer>
+
+<script>
+document.getElementById("loginForm")
+.addEventListener("submit", function(event) {
+  event.preventDefault();
+
+  document.getElementById("loginMsg").textContent =
+  "লগইন ব্যবস্থা পরবর্তী ধাপে যুক্ত করা হবে।";
+});
+</script>
+
+</body>
+  </html>
+        
