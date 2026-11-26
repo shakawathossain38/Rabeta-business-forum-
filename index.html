@@ -410,19 +410,45 @@ await loadAdminStats();
 
 const passwordResetArea = $("passwordResetArea");
 
-const recoveryHash = window.location.hash;
-
-if (
-  recoveryHash.includes("type=recovery") ||
-  recoveryHash.includes("access_token=")
-) {
+function showPasswordReset() {
   passwordResetArea.style.display = "block";
+  $("loginSection").classList.remove("hidden");
+  $("passwordResetMsg").textContent = "";
 }
 
+// Recovery URL Check
+
+const recoveryHash = new URLSearchParams(
+  window.location.hash.substring(1)
+);
+
+const recoveryParams = new URLSearchParams(
+  window.location.search
+);
+
+if (
+  recoveryHash.get("type") === "recovery" ||
+  recoveryParams.get("type") === "recovery"
+) {
+  showPasswordReset();
+}
+
+// Supabase Recovery Event
+
+supabaseClient.auth.onAuthStateChange((event, session) => {
+
+  if (event === "PASSWORD_RECOVERY" && session) {
+    showPasswordReset();
+  }
+
+});
+
+// Update Password
+
 $("updatePasswordBtn").addEventListener("click", async function () {
+
   const newPassword = $("newPassword").value;
   const confirmPassword = $("confirmPassword").value;
-
   const msg = $("passwordResetMsg");
 
   if (newPassword.length < 6) {
@@ -447,8 +473,8 @@ $("updatePasswordBtn").addEventListener("click", async function () {
   }
 
   msg.textContent = "পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে।";
-
   passwordResetArea.style.display = "none";
+
 });
   
 // Admin Logout
