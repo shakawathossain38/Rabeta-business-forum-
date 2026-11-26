@@ -199,15 +199,67 @@ footer {
 
 <main class="container">
 
+
 <!-- HOME PAGE -->
 <section id="homePage" class="hidden">
 
+  <!-- Welcome Bar -->
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+    <div>
+      <h3 style="margin:0">স্বাগতম, RABETA সদস্য</h3>
+      <p style="font-size:12px;color:#68756e;margin-top:6px">
+        রাবেতা বিজনেস ফোরাম
+      </p>
+    </div>
+    <button type="button" id="homeLogoutBtn"
+      style="width:auto;margin:0;padding:9px 13px;font-size:13px">
+      লগআউট
+    </button>
+  </div>
+<!-- Member Information -->
+<div class="card">
+  <h3>সদস্য পরিচিতি</h3>
+  <p>নাম: <strong id="memberWelcomeName">সদস্য</strong></p>
+  <p style="margin-top:10px">
+    Member ID: <strong id="memberUserId">-</strong>
+  </p>
+</div>
+  <!-- Notice Bar -->
+  <div style="background:#176b50;color:white;padding:12px;border-radius:8px;margin-bottom:15px;font-size:14px">
+    📢 নোটিশ: রাবেতা বিজনেস ফোরামের সকল কার্যক্রম এখানে দেখুন।
+  </div>
+
+  <!-- Dashboard Services -->
   <div class="card">
-    <h3>প্রধান মেনু</h3>
-    <button id="servicesBtn" class="hidden">সেবা</button>
+    <h3>সেবা মেনু</h3>
+
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px">
+
+      <button type="button" onclick="openService('membersPage')">
+        👥<br>সদস্য ব্যবস্থাপনা
+      </button>
+
+      <button type="button" onclick="openService('depositPage')">
+        💰<br>জমা ও উত্তোলন
+      </button>
+
+      <button type="button" onclick="openService('receiptPage')">
+        🧾<br>মানি রিসিট
+      </button>
+
+      <button type="button" onclick="openService('businessPage')">
+        🏢<br>ব্যবসায়িক তথ্য
+      </button>
+
+      <button type="button" onclick="openService('noticePage')">
+        🔔<br>নোটিশ বোর্ড
+      </button>
+
+    </div>
   </div>
 
 </section>
+
 
  <!-- SERVICES PAGE -->
 <section class="hidden" id="servicesPage">
@@ -470,16 +522,22 @@ if (profile.role === "admin") {
  $("adminDashboard").classList.remove("hidden");
 
 $("homePage").classList.remove("hidden");
-$("servicesBtn").classList.remove("hidden");
+
 
 await loadAdminStats();
   
-} else {
+}else {
 
   $("loginMsg").textContent = "Member Login সফল হয়েছে!";
 
-}
+  $("loginSection").classList.add("hidden");
+  $("welcomeCard").classList.add("hidden");
+  $("homePage").classList.remove("hidden");
 
+  $("memberWelcomeName").textContent = profile.full_name || "সদস্য";
+  $("memberUserId").textContent = profile.member_id || "-";
+
+}
 
   } catch (error) {
     $("loginMsg").textContent =
@@ -557,6 +615,27 @@ $("updatePasswordBtn").addEventListener("click", async function () {
   passwordResetArea.style.display = "none";
 
 });
+  // Home Dashboard Logout
+
+$("homeLogoutBtn").addEventListener("click", async function () {
+
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    alert("লগআউট ব্যর্থ: " + error.message);
+    return;
+  }
+
+  $("homePage").classList.add("hidden");
+  $("adminDashboard").classList.add("hidden");
+
+  $("welcomeCard").classList.remove("hidden");
+  $("loginSection").classList.remove("hidden");
+
+  $("loginForm").reset();
+  $("loginMsg").textContent = "সফলভাবে লগআউট হয়েছে।";
+
+});
   
 // Admin Logout
 
@@ -630,11 +709,10 @@ $("homeBtn").addEventListener("click", function () {
   $("servicesPage").classList.add("hidden");
 
   $("homePage").classList.remove("hidden");
-  $("welcomeCard").classList.remove("hidden");
-  $("loginSection").classList.remove("hidden");
+  $("welcomeCard").classList.add("hidden");
+  $("loginSection").classList.add("hidden");
 
-});                                   
-
+});
   // Individual Service Page Navigation
 
 function openService(pageId) {
@@ -659,7 +737,7 @@ function openService(pageId) {
   $(pageId).classList.remove("hidden");
 }
 
-// Back to Home from all service pages
+// Back to Home Dashboard
 
 document.querySelectorAll(".backHomeBtn").forEach(button => {
 
@@ -677,10 +755,10 @@ document.querySelectorAll(".backHomeBtn").forEach(button => {
       $(id).classList.add("hidden");
     });
 
-    $("servicesPage").classList.add("hidden");
     $("homePage").classList.remove("hidden");
-    $("welcomeCard").classList.remove("hidden");
-    $("loginSection").classList.remove("hidden");
+    $("welcomeCard").classList.add("hidden");
+    $("loginSection").classList.add("hidden");
+    $("servicesPage").classList.add("hidden");
 
   });
 
