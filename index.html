@@ -102,6 +102,9 @@ footer {
   color: #68756e;
   font-size: 12px;
 }
+  .hidden {
+  display: none !important;
+}
 </style>
 </head>
 
@@ -115,6 +118,94 @@ footer {
 
 <main class="container">
 
+ <!-- HOME PAGE -->
+  <section id="homePage">
+
+    <div class="card">
+      <h3>প্রধান মেনু</h3>
+      <button type="button" id="servicesBtn">
+        সেবা
+      </button>
+    </div>
+
+  </section>
+
+ <!-- SERVICES PAGE -->
+<section class="hidden" id="servicesPage">
+
+  <div class="card">
+    <h3>রাবেতা বিজনেস ফোরাম — সেবাসমূহ</h3>
+
+    <button type="button" onclick="openService('membersPage')">
+      সদস্য ব্যবস্থাপনা
+    </button>
+
+    <button type="button" onclick="openService('depositPage')">
+      জমা ও উত্তোলন
+    </button>
+
+    <button type="button" onclick="openService('receiptPage')">
+      মানি রিসিট
+    </button>
+
+    <button type="button" onclick="openService('businessPage')">
+      ব্যবসায়িক তথ্য
+    </button>
+
+    <button type="button" onclick="openService('noticePage')">
+      নোটিশ বোর্ড
+    </button>
+
+    <button type="button" id="homeBtn">
+      হোমে ফিরে যান
+    </button>
+  </div>
+
+</section>
+
+<!-- INDIVIDUAL SERVICE PAGES -->
+
+<section class="hidden" id="membersPage">
+  <div class="card">
+    <h3>সদস্য ব্যবস্থাপনা</h3>
+    <p>সদস্য সংক্রান্ত কার্যক্রম এখানে থাকবে।</p>
+    <button type="button" class="backHomeBtn">হোমে ফিরে যান</button>
+  </div>
+</section>
+
+<section class="hidden" id="depositPage">
+  <div class="card">
+    <h3>জমা ও উত্তোলন</h3>
+    <p>জমা ও উত্তোলন সংক্রান্ত কার্যক্রম এখানে থাকবে।</p>
+    <button type="button" class="backHomeBtn">হোমে ফিরে যান</button>
+  </div>
+</section>
+
+<section class="hidden" id="receiptPage">
+  <div class="card">
+    <h3>মানি রিসিট</h3>
+    <p>মানি রিসিট সংক্রান্ত কার্যক্রম এখানে থাকবে।</p>
+    <button type="button" class="backHomeBtn">হোমে ফিরে যান</button>
+  </div>
+</section>
+
+<section class="hidden" id="businessPage">
+  <div class="card">
+    <h3>ব্যবসায়িক তথ্য</h3>
+    <p>ব্যবসায়িক তথ্য এখানে থাকবে।</p>
+    <button type="button" class="backHomeBtn">হোমে ফিরে যান</button>
+  </div>
+</section>
+
+<section class="hidden" id="noticePage">
+  <div class="card">
+    <h3>নোটিশ বোর্ড</h3>
+    <p>সংগঠনের নোটিশ এখানে থাকবে।</p>
+    <button type="button" class="backHomeBtn">হোমে ফিরে যান</button>
+  </div>
+</section>
+
+  <!-- আপনার আগের স্বাগতম কার্ড এখান থেকে শুরু -->
   <section class="card">
     <h3>স্বাগতম</h3>
     <p style="text-align:center;line-height:1.8">
@@ -417,8 +508,78 @@ async function loadAdminStats() {
   } else {
     $("approvedDeposits").textContent = approved ?? 0;
   }
-                                     }
-  
+  // Home and Services Page Navigation
+
+$("servicesBtn").addEventListener("click", function () {
+
+  $("homePage").classList.add("hidden");
+  $("welcomeCard").classList.add("hidden");
+  $("loginSection").classList.add("hidden");
+
+  $("servicesPage").classList.remove("hidden");
+
+});
+
+$("homeBtn").addEventListener("click", function () {
+
+  $("servicesPage").classList.add("hidden");
+
+  $("homePage").classList.remove("hidden");
+  $("welcomeCard").classList.remove("hidden");
+  $("loginSection").classList.remove("hidden");
+
+});                                   }
+
+  // Individual Service Page Navigation
+
+function openService(pageId) {
+
+  $("homePage").classList.add("hidden");
+  $("welcomeCard").classList.add("hidden");
+  $("loginSection").classList.add("hidden");
+  $("servicesPage").classList.add("hidden");
+
+  const servicePages = [
+    "membersPage",
+    "depositPage",
+    "receiptPage",
+    "businessPage",
+    "noticePage"
+  ];
+
+  servicePages.forEach(id => {
+    $(id).classList.add("hidden");
+  });
+
+  $(pageId).classList.remove("hidden");
+}
+
+// Back to Home from all service pages
+
+document.querySelectorAll(".backHomeBtn").forEach(button => {
+
+  button.addEventListener("click", function () {
+
+    const servicePages = [
+      "membersPage",
+      "depositPage",
+      "receiptPage",
+      "businessPage",
+      "noticePage"
+    ];
+
+    servicePages.forEach(id => {
+      $(id).classList.add("hidden");
+    });
+
+    $("servicesPage").classList.add("hidden");
+    $("homePage").classList.remove("hidden");
+    $("welcomeCard").classList.remove("hidden");
+    $("loginSection").classList.remove("hidden");
+
+  });
+
+});
 </script>
 
 </body>
