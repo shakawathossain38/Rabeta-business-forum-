@@ -356,6 +356,27 @@ $("updatePasswordBtn").addEventListener("click", async function () {
 
   passwordResetArea.style.display = "none";
 });
+  
+// Admin Logout
+
+$("adminLogoutBtn").addEventListener("click", async function () {
+
+  const { error } = await supabaseClient.auth.signOut();
+
+  if (error) {
+    alert("লগআউট ব্যর্থ: " + error.message);
+    return;
+  }
+
+  $("adminDashboard").classList.add("hidden");
+  $("loginSection").classList.remove("hidden");
+
+  $("loginForm").reset();
+
+  $("loginMsg").textContent = "সফলভাবে লগআউট হয়েছে।";
+
+});
+  
     
 </script>
 
