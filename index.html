@@ -204,7 +204,7 @@ footer {
 </section>
 
   <!-- আপনার আগের স্বাগতম কার্ড এখান থেকে শুরু -->
-  <section class="card">
+ <section class="card" id="welcomeCard">
     <h3>স্বাগতম</h3>
     <p style="text-align:center;line-height:1.8">
       রাবেতা বিজনেস ফোরামের
@@ -516,7 +516,7 @@ async function loadAdminStats() {
     $("approvedDeposits").textContent = approved ?? 0;
   }
 
-});
+}
 
 $("homeBtn").addEventListener("click", function () {
 
@@ -526,7 +526,7 @@ $("homeBtn").addEventListener("click", function () {
   $("welcomeCard").classList.remove("hidden");
   $("loginSection").classList.remove("hidden");
 
-});                                   }
+});                                   
 
   // Individual Service Page Navigation
 
@@ -578,19 +578,7 @@ document.querySelectorAll(".backHomeBtn").forEach(button => {
   });
 
 });
-প্রধান মেনু
-সেবা
-স্বাগতম
-রাবেতা বিজনেস ফোরামের অফিসিয়াল ডিজিটাল প্ল্যাটফর্মে আপনাকে স্বাগতম।
-
-লগইন করুন
-ইমেইল / সদস্য আইডি
-আপনার ইমেইল বা সদস্য আইডি
-পাসওয়ার্ড
-পাসওয়ার্ড লিখুন
- লগইন
   
 </script>
-
 </body>
 </html>
