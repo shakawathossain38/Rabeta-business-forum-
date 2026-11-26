@@ -152,6 +152,35 @@ footer {
       </p>
 
     </form>
+    
+<div id="passwordResetArea" style="display:none;margin-top:20px">
+
+  <h3>নতুন পাসওয়ার্ড সেট করুন</h3>
+
+  <label for="newPassword">নতুন পাসওয়ার্ড</label>
+  <input
+    type="password"
+    id="newPassword"
+    placeholder="নতুন পাসওয়ার্ড লিখুন"
+    required
+  >
+
+  <label for="confirmPassword">পুনরায় পাসওয়ার্ড লিখুন</label>
+  <input
+    type="password"
+    id="confirmPassword"
+    placeholder="আবার পাসওয়ার্ড লিখুন"
+    required
+  >
+
+  <button type="button" id="updatePasswordBtn">
+    পাসওয়ার্ড পরিবর্তন করুন
+  </button>
+
+  <p id="passwordResetMsg"></p>
+
+</div>
+    
   </section>
 
 </main>
@@ -217,6 +246,52 @@ $("loginForm").addEventListener("submit", async function(event) {
       "লগইন ব্যর্থ: " + error.message;
   }
 });
+  
+// Password Reset Handler
+
+const passwordResetArea = $("passwordResetArea");
+
+const recoveryHash = window.location.hash;
+
+if (
+  recoveryHash.includes("type=recovery") ||
+  recoveryHash.includes("access_token=")
+) {
+  passwordResetArea.style.display = "block";
+}
+
+$("updatePasswordBtn").addEventListener("click", async function () {
+  const newPassword = $("newPassword").value;
+  const confirmPassword = $("confirmPassword").value;
+
+  const msg = $("passwordResetMsg");
+
+  if (newPassword.length < 6) {
+    msg.textContent = "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।";
+    return;
+  }
+
+  if (newPassword !== confirmPassword) {
+    msg.textContent = "দুটি পাসওয়ার্ড মিলছে না।";
+    return;
+  }
+
+  msg.textContent = "পাসওয়ার্ড পরিবর্তন হচ্ছে...";
+
+  const { error } = await supabaseClient.auth.updateUser({
+    password: newPassword
+  });
+
+  if (error) {
+    msg.textContent = "ব্যর্থ: " + error.message;
+    return;
+  }
+
+  msg.textContent = "পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে।";
+
+  passwordResetArea.style.display = "none";
+});
+    
 </script>
 
 </body>
