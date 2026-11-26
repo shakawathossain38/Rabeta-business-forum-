@@ -340,6 +340,7 @@ header p{
       <p>Member ID: <span id="profileHeaderCode">—</span></p>
     </div>
 
+    <button type="button" class="light" id="editOwnProfileBtn">Edit My Profile</button>
     <div class="profile-accordion">
 
       <details open>
@@ -421,6 +422,9 @@ header p{
       <span>সঞ্চয়ের হিসাব</span>
     </div>
 
+    <div class="menu-item" data-target="organizationCard"><i data-lucide="building-2" class="digital-icon"></i><span>Organization Accounts</span></div>
+    <div class="menu-item" data-target="sharesCard"><i data-lucide="layers" class="digital-icon"></i><span>Share Management</span></div>
+    <div class="menu-item hidden" id="reportsMenuItem" data-target="reportsCard"><i data-lucide="file-chart-column" class="digital-icon"></i><span>Reports</span></div>
     <div class="menu-item" data-target="noticeCard">
       <i data-lucide="bell" class="digital-icon"></i>
       <span>নোটিশ</span>
@@ -487,6 +491,7 @@ header p{
     <th>ধরন</th>
     <th>পরিমাণ</th>
     <th>বিবরণ</th>
+    <th>Receipt</th>
     <th id="adminActionHead" class="hidden">অ্যাকশন</th>
   </tr>
 </thead>
@@ -496,6 +501,24 @@ header p{
 </section>
 
 
+<section class="card hidden" id="organizationCard">
+<div class="section-title"><h3>Organization Accounts</h3><button class="secondary" onclick="showHomePage()">← Home</button></div>
+<div class="stats"><div class="stat"><span>Total Income</span><strong id="orgIncome">৳ 0</strong></div><div class="stat"><span>Total Expenses</span><strong id="orgExpense">৳ 0</strong></div><div class="stat"><span>Current Fund</span><strong id="orgFund">৳ 0</strong></div></div>
+<div id="orgAdminForm" class="hidden"><h4>Record Income / Expense</h4><input type="hidden" id="orgEditId">
+<label>Date</label><input type="date" id="orgDate"><label>Type</label><select id="orgKind"><option value="income">Income</option><option value="expense">Expense</option></select>
+<label>Category</label><input id="orgCategory"><label>Amount (BDT)</label><input type="number" id="orgAmount" min="0.01" step="0.01">
+<label>Description</label><textarea id="orgDescription"></textarea><button id="saveOrgBtn">Save Record</button><button class="secondary" id="cancelOrgEditBtn">Clear Form</button><p id="orgMsg" class="message"></p></div>
+<h4>Organization Transaction History</h4><div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Category</th><th>Amount</th><th>Description</th><th>Receipt</th><th id="orgActionHead" class="hidden">Action</th></tr></thead><tbody id="orgRecords"></tbody></table></div>
+</section>
+<section class="card hidden" id="sharesCard">
+<div class="section-title"><h3>Share Management</h3><button class="secondary" onclick="showHomePage()">← Home</button></div>
+<div class="stats"><div class="stat"><span>Share Price</span><strong id="sharePriceView">৳ 0</strong></div><div class="stat"><span>My / Total Shares</span><strong id="shareQuantityView">0</strong></div><div class="stat"><span>Share Value</span><strong id="shareValueView">৳ 0</strong></div></div>
+<div id="shareAdminControls" class="hidden"><h4>Share Settings</h4><label>Price per Share (BDT)</label><input type="number" id="sharePriceInput" min="0.01" step="0.01"><button id="saveSharePriceBtn">Update Share Price</button><p id="shareSettingsMsg" class="message"></p>
+<h4>Record Share Transaction</h4><label>Member</label><select id="shareMemberSelect"></select><label>Type</label><select id="shareKind"><option value="purchase">Purchase</option><option value="cancellation">Cancellation</option></select><label>Quantity</label><input type="number" id="shareQuantityInput" min="1" step="1"><label>Description</label><input id="shareDescription"><button id="saveShareTransactionBtn">Save Share Transaction</button><p id="shareTransactionMsg" class="message"></p></div>
+<h4 id="shareHistoryTitle">My Share History</h4><div class="table-wrap"><table><thead><tr><th>Date</th><th>Member</th><th>Type</th><th>Quantity</th><th>Unit Price</th><th>Total</th><th>Receipt</th></tr></thead><tbody id="shareRecords"></tbody></table></div>
+</section>
+<section class="card hidden" id="reportsCard"><div class="section-title"><h3>Reports</h3><button class="secondary" onclick="showHomePage()">← Home</button></div>
+<label>Period</label><select id="reportPeriod"><option value="month">Current Month</option><option value="year">Current Year</option><option value="all">All Time</option></select><button id="loadReportsBtn">Generate Report</button><div id="reportResults"></div><button class="secondary" id="printReportsBtn">Print Report</button></section>
 <section class="card" id="noticeCard">
   <h3>সংগঠনের নোটিশ</h3>
 <button class="secondary" onclick="showHomePage()">
@@ -818,6 +841,7 @@ async function loadDashboard() {
     const isAdmin = currentRole === "admin";
 
     $("adminMenuItem").classList.toggle("hidden", !isAdmin);
+    $("reportsMenuItem").classList.toggle("hidden", !isAdmin);
     $("admin").classList.add("hidden");
     $("memberMenu").classList.remove("hidden");
 
@@ -836,6 +860,8 @@ async function loadDashboard() {
     }
 
     await loadTransactions();
+    await loadOrganizationData();
+    await loadShareData();
 
     if (window.lucide) {
       window.lucide.createIcons();
@@ -863,6 +889,9 @@ function showHomePage() {
     "recordsCard",
     "noticeCard",
     "helpCard",
+    "organizationCard",
+    "sharesCard",
+    "reportsCard",
     "admin"
   ];
 
@@ -899,6 +928,9 @@ function openServicePage(id) {
     "recordsCard",
     "noticeCard",
     "helpCard",
+    "organizationCard",
+    "sharesCard",
+    "reportsCard",
     "admin"
   ];
 
@@ -953,6 +985,23 @@ async function loadMemberProfile() {
 
   $("memberProfileForm").classList.add("hidden");
   $("memberProfileView").classList.remove("hidden");
+  $("memberProfileForm").querySelector("h3").textContent = "Edit Member Profile";
+  $("editOwnProfileBtn").onclick = () => {
+    $("profileFullName").value = data.full_name || "";
+    $("fatherName").value = data.father_name || "";
+    $("motherName").value = data.mother_name || "";
+    $("dateOfBirth").value = data.date_of_birth || "";
+    $("bloodGroup").value = data.blood_group || "";
+    $("profilePhone").value = data.phone || "";
+    $("profileEducation").value = data.education || "";
+    $("profileOccupation").value = data.occupation || "";
+    $("profileAddress").value = data.address || "";
+    $("profileAbout").value = data.about || "";
+    $("memberProfileView").classList.add("hidden");
+    $("memberProfileForm").classList.remove("hidden");
+    $("profileMessage").textContent = "";
+    $("memberProfileForm").scrollIntoView({behavior:"smooth"});
+  };
 
   const photo = await signedPhoto(data.photo_path);
   const avatar = $("profileHeaderPhoto");
@@ -1350,6 +1399,17 @@ async function loadTransactions() {
       td.textContent = value;
       tr.appendChild(td);
     });
+
+    const receiptTd = document.createElement("td");
+    const receiptBtn = document.createElement("button");
+    receiptBtn.textContent = "Print";
+    receiptBtn.className = "light";
+    receiptBtn.onclick = () => printRabetaReceipt({
+      title: displayType, date: item.entry_date, amount,
+      receipt: item.receipt_number || item.id, description: item.description
+    });
+    receiptTd.appendChild(receiptBtn);
+    tr.appendChild(receiptTd);
 
     if (currentRole === "admin") {
       const td = document.createElement("td");
@@ -1849,7 +1909,126 @@ education: $("editEducation").value.trim(),
   }
     }
 
-  // ------------------------------
+  // Organization Accounts
+function rabetaDate() {
+  return new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Dhaka",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+}
+async function loadOrganizationData() {
+  const body=$("orgRecords"); if(!body)return;
+  const {data,error}=await supabaseClient.from("organization_transactions").select("*").order("entry_date",{ascending:false});
+  body.innerHTML="";
+  if(error){body.innerHTML=`<tr><td colspan="7">${escapeHTML(error.message)}</td></tr>`;return;}
+  let income=0,expense=0;
+  (data||[]).forEach(row=>{
+    const amount=Number(row.amount||0); if(row.kind==="income")income+=amount;if(row.kind==="expense")expense+=amount;
+    const tr=document.createElement("tr");
+    [row.entry_date||"",row.kind==="income"?"Income":"Expense",row.category||"",taka(amount),row.description||""].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.appendChild(td);});
+    const rc=document.createElement("td"),rb=document.createElement("button");rb.textContent="Print";rb.className="light";
+    rb.onclick=()=>printRabetaReceipt({title:"Organization "+row.kind,date:row.entry_date,amount,receipt:row.id,category:row.category,description:row.description});rc.appendChild(rb);tr.appendChild(rc);
+    if(currentRole==="admin"){const td=document.createElement("td"),eb=document.createElement("button"),db=document.createElement("button");
+      eb.textContent="Edit";eb.onclick=()=>{$("orgEditId").value=row.id;$("orgDate").value=row.entry_date||rabetaDate();$("orgKind").value=row.kind;$("orgCategory").value=row.category||"";$("orgAmount").value=row.amount;$("orgDescription").value=row.description||"";};
+      db.textContent="Delete";db.className="danger";db.onclick=async()=>{if(confirm("Delete this record?")){const r=await supabaseClient.from("organization_transactions").delete().eq("id",row.id);if(r.error)alert(r.error.message);else loadOrganizationData();}};
+      td.append(eb,db);tr.appendChild(td);}
+    body.appendChild(tr);
+  });
+  $("orgIncome").textContent=taka(income);$("orgExpense").textContent=taka(expense);$("orgFund").textContent=taka(income-expense);
+  $("orgAdminForm").classList.toggle("hidden",currentRole!=="admin");$("orgActionHead").classList.toggle("hidden",currentRole!=="admin");
+}
+async function saveOrganizationTransaction(){
+  if(currentRole!=="admin")return;
+  const amount=Number($("orgAmount").value),id=$("orgEditId").value;
+  if(!Number.isFinite(amount)||amount<=0){showMessage("orgMsg","Enter a valid amount.","error");return;}
+  const row={entry_date:$("orgDate").value||rabetaDate(),kind:$("orgKind").value,category:$("orgCategory").value.trim(),amount,description:$("orgDescription").value.trim(),created_by:currentUser.id};
+  const r=id?await supabaseClient.from("organization_transactions").update(row).eq("id",id):await supabaseClient.from("organization_transactions").insert(row);
+  if(r.error){showMessage("orgMsg",r.error.message,"error");return;}
+  showMessage("orgMsg","Record saved successfully.");$("orgEditId").value="";$("orgDate").value=rabetaDate();$("orgCategory").value="";$("orgAmount").value="";$("orgDescription").value="";await loadOrganizationData();
+}
+
+// Share Management
+async function loadShareData(){
+  const setting=await supabaseClient.from("share_settings").select("*").eq("id",1).maybeSingle();
+  if(setting.error)console.error(setting.error);
+  const price=Number(setting.data?.share_price||0);$("sharePriceView").textContent=taka(price);$("sharePriceInput").value=price||"";
+  $("shareAdminControls").classList.toggle("hidden",currentRole!=="admin");
+  let q=supabaseClient.from("share_transactions").select("*").order("entry_date",{ascending:false});
+  if(currentRole!=="admin")q=q.eq("member_id",currentUser.id);
+  const {data,error}=await q;const body=$("shareRecords");body.innerHTML="";
+  if(error){body.innerHTML=`<tr><td colspan="7">${escapeHTML(error.message)}</td></tr>`;return;}
+  const memberNames={};
+  if(currentRole==="admin"){
+    const {data:profiles}=await supabaseClient.from("profiles").select("id,member_id,full_name").eq("role","member");
+    (profiles||[]).forEach(p=>memberNames[p.id]=`${p.member_id} - ${p.full_name||"Member"}`);
+  }
+  let my=0,total=0;
+  (data||[]).forEach(row=>{
+    const qty=Number(row.quantity||0),unit=Number(row.unit_price||0),delta=row.kind==="purchase"?qty:-qty;
+    total+=delta;if(row.member_id===currentUser.id)my+=delta;
+    const tr=document.createElement("tr");
+    [row.entry_date||"",row.member_id===currentUser.id?(currentProfile?.full_name||"Me"):(memberNames[row.member_id]||row.member_id),row.kind==="purchase"?"Purchase":"Cancellation",qty,taka(unit),taka(qty*unit)].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.appendChild(td);});
+    const td=document.createElement("td"),b=document.createElement("button");b.textContent="Print";b.className="light";
+    b.onclick=()=>printRabetaReceipt({title:"Share "+row.kind,date:row.entry_date,amount:qty*unit,quantity:qty,unitPrice:unit,receipt:row.receipt_number||row.id,description:row.description});td.appendChild(b);tr.appendChild(td);body.appendChild(tr);
+  });
+  $("shareQuantityView").textContent=String(currentRole==="admin"?total:my);$("shareValueView").textContent=taka((currentRole==="admin"?total:my)*price);
+  $("shareHistoryTitle").textContent=currentRole==="admin"?"All Share Transactions":"My Share History";
+  if(currentRole==="admin"){
+    const {data:members,error:me}=await supabaseClient.from("profiles").select("id,member_id,full_name").eq("role","member").order("member_id");
+    const select=$("shareMemberSelect");select.innerHTML='<option value="">Select member</option>';
+    if(!me)(members||[]).forEach(m=>{const o=document.createElement("option");o.value=m.id;o.textContent=`${m.member_id} - ${m.full_name||"Member"}`;select.appendChild(o);});
+  }
+}
+async function saveSharePrice(){
+  if(currentRole!=="admin")return;const price=Number($("sharePriceInput").value);
+  if(!Number.isFinite(price)||price<=0){showMessage("shareSettingsMsg","Enter a valid share price.","error");return;}
+  const {error}=await supabaseClient.from("share_settings").upsert({id:1,share_price:price,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:"id"});
+  if(error)showMessage("shareSettingsMsg",error.message,"error");else{showMessage("shareSettingsMsg","Share price updated.");await loadShareData();}
+}
+async function saveShareTransaction(){
+  if(currentRole!=="admin")return;const member_id=$("shareMemberSelect").value,kind=$("shareKind").value,quantity=Number($("shareQuantityInput").value),unit_price=Number($("sharePriceInput").value);
+  if(!member_id||!Number.isInteger(quantity)||quantity<1||!Number.isFinite(unit_price)||unit_price<=0){showMessage("shareTransactionMsg","Select member and enter valid quantity and price.","error");return;}
+  if(kind==="cancellation"){
+    const {data,error}=await supabaseClient.from("share_transactions").select("kind,quantity").eq("member_id",member_id);
+    if(error){showMessage("shareTransactionMsg",error.message,"error");return;}
+    const owned=(data||[]).reduce((n,r)=>n+(r.kind==="purchase"?1:-1)*Number(r.quantity),0);
+    if(quantity>owned){showMessage("shareTransactionMsg",`Member owns only ${owned} shares.`,"error");return;}
+  }
+  const {error}=await supabaseClient.from("share_transactions").insert({member_id,entry_date:rabetaDate(),kind,quantity,unit_price,description:$("shareDescription").value.trim(),created_by:currentUser.id});
+  if(error)showMessage("shareTransactionMsg",error.message,"error");else{showMessage("shareTransactionMsg","Share transaction saved.");$("shareQuantityInput").value="";$("shareDescription").value="";await loadShareData();}
+}
+
+// Receipts and reports
+function printRabetaReceipt(info){
+  const w=window.open("","_blank","width=700,height=750");if(!w){alert("Allow pop-ups to print receipts.");return;}
+  const rows=[["Date",info.date||""],["Receipt No.",info.receipt||"—"],["Amount",taka(info.amount)],["Quantity",info.quantity??"—"],["Unit Price",info.unitPrice?taka(info.unitPrice):"—"],["Category",info.category||"—"],["Description",info.description||"—"]];
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>RABETA Receipt</title><style>body{font-family:Arial;padding:30px;color:#173b2b}h2{text-align:center}.box{border:1px solid #777;padding:20px;margin-top:25px}table{width:100%;border-collapse:collapse}td{padding:10px;border-bottom:1px solid #ddd}.foot{text-align:center;margin-top:35px}</style></head><body><h2>RABETA BUSINESS FORUM</h2><p style="text-align:center">Official Transaction Receipt</p><div class="box"><h3>${escapeHTML(info.title||"Receipt")}</h3><table>${rows.map(([k,v])=>`<tr><td><b>${escapeHTML(k)}</b></td><td>${escapeHTML(v)}</td></tr>`).join("")}</table></div><p class="foot">RABETA Business Forum</p><script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
+}
+async function generateReports(){
+  if(currentRole!=="admin")return;
+  const period=$("reportPeriod").value,parts=rabetaDate().split("-"),yy=parts[0],mm=parts[1];
+  const from=period==="month"?`${yy}-${mm}-01`:period==="year"?`${yy}-01-01`:null;
+  let oq=supabaseClient.from("organization_transactions").select("*"),sq=supabaseClient.from("share_transactions").select("*"),tq=supabaseClient.from("transactions").select("*");
+  if(from){oq=oq.gte("entry_date",from);sq=sq.gte("entry_date",from);tq=tq.gte("entry_date",from);}
+  const [o,sh,t,pr]=await Promise.all([oq, sq, tq, supabaseClient.from("profiles").select("id,member_id,full_name").eq("role","member")]);
+  const err=o.error||sh.error||t.error||pr.error;
+  if(err){$("reportResults").textContent=err.message;return;}
+  const sum=(a,k)=> (a||[]).filter(x=>x.kind===k).reduce((n,x)=>n+Number(x.amount||0),0);
+  const oi=sum(o.data,"income"),oe=sum(o.data,"expense"),dep=sum(t.data,"deposit"),wd=sum(t.data,"withdrawal");
+  const bought=(sh.data||[]).filter(x=>x.kind==="purchase").reduce((n,x)=>n+Number(x.quantity||0),0);
+  const cancel=(sh.data||[]).filter(x=>x.kind==="cancellation").reduce((n,x)=>n+Number(x.quantity||0),0);
+  const shareCapital=(sh.data||[]).reduce((n,x)=>n+(x.kind==="purchase"?1:-1)*Number(x.quantity||0)*Number(x.unit_price||0),0);
+  const names={};(pr.data||[]).forEach(m=>names[m.id]=`${m.member_id} - ${m.full_name||"Member"}`);
+  const totals={};(pr.data||[]).forEach(m=>totals[m.id]={name:names[m.id],deposit:0,withdrawal:0});
+  (t.data||[]).forEach(x=>{if(!totals[x.member_id])totals[x.member_id]={name:names[x.member_id]||x.member_id,deposit:0,withdrawal:0};if(x.kind==="deposit")totals[x.member_id].deposit+=Number(x.amount||0);if(x.kind==="withdrawal")totals[x.member_id].withdrawal+=Number(x.amount||0);});
+  const memberRows=Object.values(totals).map(x=>`<tr><td>${escapeHTML(x.name)}</td><td>${taka(x.deposit)}</td><td>${taka(x.withdrawal)}</td><td>${taka(x.deposit-x.withdrawal)}</td></tr>`).join("");
+  const label=period==="month"?"Current Month":period==="year"?"Current Year":"All Time";
+  $("reportResults").innerHTML=`<div class="card"><h4>${label} Summary</h4>
+  <p>Member Deposits: <b>${taka(dep)}</b></p><p>Member Withdrawals: <b>${taka(wd)}</b></p><p>Member Savings Net: <b>${taka(dep-wd)}</b></p>
+  <p>Organization Income: <b>${taka(oi)}</b></p><p>Organization Expenses: <b>${taka(oe)}</b></p><p>Organization Net Movement: <b>${taka(oi-oe)}</b></p>
+  <p>Shares Purchased: <b>${bought}</b></p><p>Shares Cancelled: <b>${cancel}</b></p><p>Net Shares: <b>${bought-cancel}</b></p><p>Net Share Capital: <b>${taka(shareCapital)}</b></p>
+  <h4>Member-wise Savings Report</h4><div class="table-wrap"><table><thead><tr><th>Member</th><th>Deposits</th><th>Withdrawals</th><th>Balance</th></tr></thead><tbody>${memberRows||"<tr><td colspan='4'>No records</td></tr>"}</tbody></table></div></div>`;
+}
+function printReports(){const html=$("reportResults").innerHTML;if(!html.trim()){alert("Generate a report first.");return;}const w=window.open("","_blank","width=800,height=700");if(!w){alert("Allow pop-ups.");return;}w.document.write(`<html><head><meta charset="utf-8"><title>RABETA Report</title></head><body><h2>RABETA BUSINESS FORUM — Report</h2>${html}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();}
+
+// ------------------------------
 // পাসওয়ার্ড ভুলে গেলে
 // ------------------------------
 
@@ -1936,6 +2115,10 @@ async function updateNewPassword() {
     );
     return;
   }
+  if (password !== confirmPassword) {
+    showMessage("resetPasswordMsg", "Passwords do not match.", "error");
+    return;
+  }
 try {
     const { error } =
       await supabaseClient.auth.updateUser({
@@ -2003,6 +2186,17 @@ function setupEventListeners() {
     "click",
     saveAdminProfileEdit
   );
+  $("saveOrgBtn").addEventListener("click", saveOrganizationTransaction);
+  $("cancelOrgEditBtn").addEventListener("click", () => {
+    $("orgEditId").value = ""; $("orgDate").value = rabetaDate();
+    $("orgKind").value = "income"; $("orgCategory").value = "";
+    $("orgAmount").value = ""; $("orgDescription").value = "";
+  });
+  $("saveSharePriceBtn").addEventListener("click", saveSharePrice);
+  $("saveShareTransactionBtn").addEventListener("click", saveShareTransaction);
+  $("loadReportsBtn").addEventListener("click", generateReports);
+  $("printReportsBtn").addEventListener("click", printReports);
+  $("orgDate").value = rabetaDate();
 
   $("closeEditBtn").addEventListener("click", () => {
     $("adminEditCard").classList.add("hidden");
@@ -2071,31 +2265,6 @@ if ("serviceWorker" in navigator) {
   });
 }
   
-// সেবা মেনুর ক্লিক ইভেন্ট
-document.querySelectorAll(".menu-item[data-target]").forEach(item => {
-  item.addEventListener("click", () => {
-    const targetId = item.dataset.target;
-    const target = $(targetId);
-
-    if (!target) {
-      alert("এই সেবাটি খুঁজে পাওয়া যায়নি।");
-      return;
-    }
-
-    // অ্যাডমিন প্যানেল শুধু অ্যাডমিনের জন্য
-    if (targetId === "admin" && currentRole !== "admin") {
-      alert("এই প্যানেল ব্যবহারের অনুমতি নেই।");
-      return;
-    }
-
-    target.classList.remove("hidden");
-
-    target.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
-  });
-});
 // ------------------------------
 // ওয়েবসাইট চালু
 // ------------------------------
