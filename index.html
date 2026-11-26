@@ -118,17 +118,15 @@ footer {
 
 <main class="container">
 
- <!-- HOME PAGE -->
-  <section id="homePage">
+<!-- HOME PAGE -->
+<section id="homePage" class="hidden">
 
-    <div class="card">
-      <h3>প্রধান মেনু</h3>
-      <button type="button" id="servicesBtn">
-        সেবা
-      </button>
-    </div>
+  <div class="card">
+    <h3>প্রধান মেনু</h3>
+    <button id="servicesBtn" class="hidden">সেবা</button>
+  </div>
 
-  </section>
+</section>
 
  <!-- SERVICES PAGE -->
 <section class="hidden" id="servicesPage">
@@ -388,8 +386,12 @@ if (profile.role === "admin") {
   $("loginMsg").textContent = "Admin Login সফল হয়েছে!";
 
   $("loginSection").classList.add("hidden");
-  $("adminDashboard").classList.remove("hidden");
-  await loadAdminStats();
+ $("adminDashboard").classList.remove("hidden");
+
+$("homePage").classList.remove("hidden");
+$("servicesBtn").classList.remove("hidden");
+
+await loadAdminStats();
   
 } else {
 
@@ -461,6 +463,12 @@ $("adminLogoutBtn").addEventListener("click", async function () {
   }
 
   $("adminDashboard").classList.add("hidden");
+
+  $("homePage").classList.add("hidden");
+  $("servicesBtn").classList.add("hidden");
+  $("servicesPage").classList.add("hidden");
+
+  $("welcomeCard").classList.remove("hidden");
   $("loginSection").classList.remove("hidden");
 
   $("loginForm").reset();
@@ -468,7 +476,6 @@ $("adminLogoutBtn").addEventListener("click", async function () {
   $("loginMsg").textContent = "সফলভাবে লগআউট হয়েছে।";
 
 });
-  
   
 // Load Admin Dashboard Statistics
 
@@ -508,15 +515,6 @@ async function loadAdminStats() {
   } else {
     $("approvedDeposits").textContent = approved ?? 0;
   }
-  // Home and Services Page Navigation
-
-$("servicesBtn").addEventListener("click", function () {
-
-  $("homePage").classList.add("hidden");
-  $("welcomeCard").classList.add("hidden");
-  $("loginSection").classList.add("hidden");
-
-  $("servicesPage").classList.remove("hidden");
 
 });
 
@@ -580,6 +578,18 @@ document.querySelectorAll(".backHomeBtn").forEach(button => {
   });
 
 });
+প্রধান মেনু
+সেবা
+স্বাগতম
+রাবেতা বিজনেস ফোরামের অফিসিয়াল ডিজিটাল প্ল্যাটফর্মে আপনাকে স্বাগতম।
+
+লগইন করুন
+ইমেইল / সদস্য আইডি
+আপনার ইমেইল বা সদস্য আইডি
+পাসওয়ার্ড
+পাসওয়ার্ড লিখুন
+ লগইন
+  
 </script>
 
 </body>
