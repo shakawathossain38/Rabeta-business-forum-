@@ -164,15 +164,59 @@ footer {
   সকল স্বত্ব সংরক্ষিত।
 </footer>
 
-<script>
-document.getElementById("loginForm")
-.addEventListener("submit", function(event) {
+
+const SUPABASE_URL =
+"https://oxvkuqdoiczlknjlxnxl.supabase.co";
+
+const SUPABASE_KEY =
+"sb_publishable_3f3CqA3_JqeNrV2VHhN67g_hAvIdP3W";
+
+const supabaseClient = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
+
+const $ = id => document.getElementById(id);
+
+$("loginForm").addEventListener("submit", async function(event) {
   event.preventDefault();
 
-  document.getElementById("loginMsg").textContent =
-  "লগইন ব্যবস্থা পরবর্তী ধাপে যুক্ত করা হবে।";
+  const email = $("email").value.trim();
+  const password = $("password").value;
+
+  $("loginMsg").textContent = "লগইন হচ্ছে...";
+
+  try {
+    const { data, error } =
+      await supabaseClient.auth.signInWithPassword({
+        email,
+        password
+      });
+
+    if (error) throw error;
+
+    const { data: profile, error: profileError } =
+      await supabaseClient
+        .from("profiles")
+        .select("full_name, member_id, role")
+        .eq("id", data.user.id)
+        .single();
+
+    if (profileError) throw profileError;
+
+    if (profile.role === "admin") {
+      $("loginMsg").textContent =
+        "Admin Login সফল হয়েছে!";
+    } else {
+      $("loginMsg").textContent =
+        "Member Login সফল হয়েছে!";
+    }
+
+  } catch (error) {
+    $("loginMsg").textContent =
+      "লগইন ব্যর্থ: " + error.message;
+  }
 });
-</script>
 
 </body>
   </html>
