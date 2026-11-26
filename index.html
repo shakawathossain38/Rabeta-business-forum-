@@ -105,6 +105,87 @@ footer {
   .hidden {
   display: none !important;
 }
+  
+/* RABETA Mobile Dashboard Design */
+
+header {
+  background: linear-gradient(135deg, #126448, #087b57);
+  padding: 30px 15px;
+}
+
+.logo {
+  font-size: 28px;
+  letter-spacing: 3px;
+}
+
+.container {
+  max-width: 650px;
+  margin: 15px auto;
+  padding: 12px;
+}
+
+.card {
+  padding: 18px;
+  border-radius: 15px;
+  margin-bottom: 14px;
+  box-shadow: 0 3px 15px #0000000d;
+}
+
+.card h3 {
+  text-align: left;
+  font-size: 16px;
+  margin-bottom: 15px;
+}
+
+button {
+  background: #167653;
+  border-radius: 10px;
+  font-size: 15px;
+  min-height: 45px;
+}
+
+button:active {
+  opacity: 0.8;
+}
+
+input {
+  border-radius: 10px;
+  min-height: 45px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.stat-box {
+  background: #edf5f0;
+  padding: 15px 5px;
+  text-align: center;
+  border-radius: 10px;
+}
+
+.stat-box h2 {
+  color: #176b50;
+  font-size: 22px;
+  margin-bottom: 6px;
+}
+
+.stat-box p {
+  font-size: 12px;
+}
+
+footer {
+  padding: 25px 10px;
+}
+
+@media (max-width: 380px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 </style>
 </head>
 
