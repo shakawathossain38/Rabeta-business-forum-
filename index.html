@@ -298,7 +298,8 @@ if (profile.role === "admin") {
 
   $("loginSection").classList.add("hidden");
   $("adminDashboard").classList.remove("hidden");
-
+  await loadAdminStats();
+  
 } else {
 
   $("loginMsg").textContent = "Member Login সফল হয়েছে!";
@@ -377,7 +378,47 @@ $("adminLogoutBtn").addEventListener("click", async function () {
 
 });
   
-    
+  
+// Load Admin Dashboard Statistics
+
+async function loadAdminStats() {
+
+  const { count: members, error: memberError } =
+    await supabaseClient
+      .from("profiles")
+      .select("*", { count: "exact", head: true });
+
+  if (memberError) {
+    console.error("Member count error:", memberError);
+  } else {
+    $("totalMembers").textContent = members ?? 0;
+  }
+
+  const { count: pending, error: pendingError } =
+    await supabaseClient
+      .from("deposit_requests")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "pending");
+
+  if (pendingError) {
+    console.error("Pending count error:", pendingError);
+  } else {
+    $("pendingDeposits").textContent = pending ?? 0;
+  }
+
+  const { count: approved, error: approvedError } =
+    await supabaseClient
+      .from("deposit_requests")
+      .select("*", { count: "exact", head: true })
+      .eq("status", "approved");
+
+  if (approvedError) {
+    console.error("Approved count error:", approvedError);
+  } else {
+    $("approvedDeposits").textContent = approved ?? 0;
+  }
+                                     }
+  
 </script>
 
 </body>
