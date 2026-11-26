@@ -291,11 +291,20 @@ $("loginForm").addEventListener("submit", async function(event) {
 
     if (profileError) throw profileError;
 
-    if (profile.role === "admin") {
-      $("loginMsg").textContent = "Admin Login সফল হয়েছে!";
-    } else {
-      $("loginMsg").textContent = "Member Login সফল হয়েছে!";
-    }
+
+if (profile.role === "admin") {
+
+  $("loginMsg").textContent = "Admin Login সফল হয়েছে!";
+
+  $("loginSection").classList.add("hidden");
+  $("adminDashboard").classList.remove("hidden");
+
+} else {
+
+  $("loginMsg").textContent = "Member Login সফল হয়েছে!";
+
+}
+
 
   } catch (error) {
     $("loginMsg").textContent =
