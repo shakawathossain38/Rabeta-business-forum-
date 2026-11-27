@@ -600,7 +600,50 @@ header p{
 
 <div class="card"><h3>সদস্যের পাসওয়ার্ড রিসেট</h3><label>সদস্য নির্বাচন</label><select id="resetMemberId"></select><label>নতুন পাসওয়ার্ড</label><input id="resetPassword" type="password"><button id="resetPasswordBtn">পাসওয়ার্ড পরিবর্তন</button><p id="resetMsg" class="message"></p></div>
 
-<div class="card"><h3>সদস্যের জমা/উত্তোলন যোগ করুন</h3><label>সদস্য নির্বাচন</label><select id="memberId"></select><label>পরিমাণ</label><input id="amount" type="number" min="1"><label>লেনদেনের ধরন</label><select id="kind"><option value="জমা">জমা</option><option value="উত্তোলন">উত্তোলন</option></select><label>বিবরণ</label><input id="note" placeholder="যেমন: মাসিক সঞ্চয়"><button id="transactionBtn">লেনদেন সংরক্ষণ</button><p id="adminMsg" class="message"></p></div>
+
+<div class="card">
+  <h3>সদস্যের জমা/উত্তোলন যোগ করুন</h3>
+
+  <label>সদস্য নির্বাচন</label>
+  <select id="memberId"></select>
+
+  <label>শেয়ারের সংখ্যা</label>
+  <select id="shareQuantity">
+    <option value="1">১</option>
+    <option value="2">২</option>
+    <option value="3">৩</option>
+    <option value="4">৪</option>
+    <option value="5">৫</option>
+  </select>
+
+  <label>টাকার পরিমাণ</label>
+  <input id="amount" type="number" min="0.01" step="0.01">
+
+  <label>লেনদেনের ধরন</label>
+  <select id="kind">
+    <option value="জমা">জমা</option>
+    <option value="উত্তোলন">উত্তোলন</option>
+  </select>
+
+  <label>জরিমানা</label>
+  <input id="fine" type="number" min="0" step="0.01" value="0">
+
+  <label>পেমেন্ট পদ্ধতি</label>
+  <select id="paymentMethod">
+    <option value="cash">Cash</option>
+    <option value="nagad">Nagad</option>
+    <option value="bkash">bKash</option>
+    <option value="rocket">Rocket</option>
+    <option value="bank">Bank</option>
+  </select>
+
+  <label>বিবরণ</label>
+  <input id="note" placeholder="যেমন: মাসিক সঞ্চয়">
+
+  <button id="transactionBtn">লেনদেন সংরক্ষণ</button>
+  <p id="adminMsg" class="message"></p>
+</div>
+
 
 <div class="card"><h3>সদস্যদের প্রোফাইল সম্পাদনা</h3><div id="adminProfiles">লোড হচ্ছে...</div></div>
 <div class="card hidden" id="adminEditCard">
@@ -715,28 +758,45 @@ async function signedPhoto(path) {
 async function signIn() {
   const loginId = $("loginId").value.trim();
   const password = $("password").value;
-  if (!loginId || !password) return showMessage("loginMsg", "Member ID and password required.", "error");
+
+  if (!loginId || !password) {
+    showMessage("loginMsg", "লগইন আইডি ও পাসওয়ার্ড দিন।", "error");
+    return;
+  }
+
   const btn = $("loginBtn");
   btn.disabled = true;
-  const email = validMemberId(loginId) ? loginId.toLowerCase() + "@members.rabeta.local" : loginId;
+
   try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .select("email")
+      .or(`member_id.eq.${loginId},email.eq.${loginId}`)
+      .maybeSingle();
+
     if (error) throw error;
-    currentUser = data.user;
-    const { data: profile, error: profileError } = await supabaseClient
-      .from("profiles").select("role,is_active").eq("id", currentUser.id).single();
-    if (profileError || !profile) {
-      await supabaseClient.auth.signOut(); currentUser = null;
-      throw new Error("Account profile not found.");
+
+    if (!data || !data.email) {
+      throw new Error("লগইন আইডি সঠিক নয়।");
     }
-    if (profile.role !== "admin" && profile.is_active === false) {
-      await supabaseClient.auth.signOut(); currentUser = null;
-      throw new Error("Your account is inactive. Please contact Admin.");
-    }
-    await loadDashboard();
+
+    const { data: authData, error: authError } =
+      await supabaseClient.auth.signInWithPassword({
+        email: data.email,
+        password: password
+      });
+
+    if (authError) throw authError;
+
+    currentUser = authData.user;
+
+  await loadDashboard();
   } catch (error) {
-    showMessage("loginMsg", "Login failed: " + error.message, "error");
-  } finally { btn.disabled = false; }
+    console.error("Login Error:", error);
+    showMessage("loginMsg", "লগইন ব্যর্থ: " + error.message, "error");
+  } finally {
+    btn.disabled = false;
+  }
 }
 
 // ------------------------------
@@ -1295,8 +1355,7 @@ async function addNotice() {
 
 // ------------------------------
 // লেনদেন
-// ------------------------------
-
+// -------------------------
 async function loadTransactions() {
   const records = $("records");
   let membersMap = {};
@@ -1309,9 +1368,8 @@ async function loadTransactions() {
 
     if (error) {
       records.innerHTML =
-        "<tr><td colspan='6'>সদস্যের তথ্য পাওয়া যায়নি: " +
-        escapeHTML(error.message) +
-        "</td></tr>";
+        "<tr><td colspan='7'>সদস্যের তথ্য পাওয়া যায়নি: " +
+        escapeHTML(error.message) + "</td></tr>";
       return;
     }
 
@@ -1324,9 +1382,7 @@ async function loadTransactions() {
   let query = supabaseClient
     .from("transactions")
     .select("*")
-    .order("entry_date", {
-      ascending: false
-    });
+    .order("entry_date", { ascending: false });
 
   if (currentRole !== "admin") {
     query = query.eq("member_id", currentUser.id);
@@ -1336,9 +1392,8 @@ async function loadTransactions() {
 
   if (error) {
     records.innerHTML =
-      "<tr><td colspan='6'>তথ্য লোড হয়নি: " +
-      escapeHTML(error.message) +
-      "</td></tr>";
+      "<tr><td colspan='7'>তথ্য লোড হয়নি: " +
+      escapeHTML(error.message) + "</td></tr>";
     return;
   }
 
@@ -1348,28 +1403,33 @@ async function loadTransactions() {
   records.innerHTML = "";
 
   $("memberHead").classList.toggle(
-    "hidden",
-    currentRole !== "admin"
+    "hidden", currentRole !== "admin"
   );
 
   $("adminActionHead").classList.toggle(
-    "hidden",
-    currentRole !== "admin"
+    "hidden", currentRole !== "admin"
   );
+
+  const paymentLabels = {
+    cash: "Cash",
+    nagad: "Nagad",
+    bkash: "bKash",
+    rocket: "Rocket",
+    bank: "Bank"
+  };
 
   (data || []).forEach(item => {
     const amount = Number(item.amount || 0);
-    const type = String(item.kind || "")
-      .trim()
-      .toLowerCase();
+    const fine = Number(item.fine || 0);
+    const shareQuantity = Number(item.share_quantity || 1);
+    const type = String(item.kind || "").trim().toLowerCase();
 
     if (type === "deposit") deposit += amount;
     if (type === "withdrawal") withdraw += amount;
 
     const date = item.entry_date
-      ? new Date(
-          item.entry_date + "T00:00:00"
-        ).toLocaleDateString("bn-BD")
+      ? new Date(item.entry_date + "T00:00:00")
+          .toLocaleDateString("bn-BD")
       : "";
 
     const displayType = {
@@ -1380,6 +1440,18 @@ async function loadTransactions() {
       fine: "জরিমানা"
     }[type] || "অনির্ধারিত";
 
+    const paymentMethod =
+      paymentLabels[item.payment_method] ||
+      item.payment_method ||
+      "উল্লেখ নেই";
+
+    const details = [
+      "শেয়ার: " + shareQuantity,
+      "জরিমানা: " + taka(fine),
+      "পেমেন্ট: " + paymentMethod,
+      "বিবরণ: " + (item.description || "")
+    ].join("\n");
+
     const tr = document.createElement("tr");
 
     if (currentRole === "admin") {
@@ -1389,25 +1461,32 @@ async function loadTransactions() {
       tr.appendChild(memberCell);
     }
 
-    [
-      date,
-      displayType,
-      taka(amount),
-      item.description || ""
-    ].forEach(value => {
+    [date, displayType, taka(amount), details].forEach(value => {
       const td = document.createElement("td");
       td.textContent = value;
+      if (value === details) {
+        td.style.whiteSpace = "pre-line";
+      }
       tr.appendChild(td);
     });
 
     const receiptTd = document.createElement("td");
     const receiptBtn = document.createElement("button");
+
     receiptBtn.textContent = "Print";
     receiptBtn.className = "light";
+
     receiptBtn.onclick = () => printRabetaReceipt({
-      title: displayType, date: item.entry_date, amount,
-      receipt: item.receipt_number || item.id, description: item.description
+      title: displayType,
+      date: item.entry_date,
+      amount,
+      fine,
+      shareQuantity,
+      paymentMethod,
+      receipt: item.receipt_number || item.id,
+      description: item.description
     });
+
     receiptTd.appendChild(receiptBtn);
     tr.appendChild(receiptTd);
 
@@ -1417,17 +1496,12 @@ async function loadTransactions() {
       const editBtn = document.createElement("button");
       editBtn.textContent = "সম্পাদনা";
       editBtn.onclick = () =>
-        editTransaction(
-          item.id,
-          amount,
-          item.description || ""
-        );
+        editTransaction(item.id, amount, item.description || "");
 
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "মুছে ফেলুন";
       deleteBtn.className = "danger";
-      deleteBtn.onclick = () =>
-        deleteTransaction(item.id);
+      deleteBtn.onclick = () => deleteTransaction(item.id);
 
       td.append(editBtn, deleteBtn);
       tr.appendChild(td);
@@ -1436,42 +1510,12 @@ async function loadTransactions() {
     records.appendChild(tr);
   });
 
-   // Calculate share value
-  let shareQuery = supabaseClient
-    .from("share_transactions")
-    .select("member_id, kind, quantity");
-
-  if (currentRole !== "admin") {
-    shareQuery = shareQuery.eq("member_id", currentUser.id);
-  }
-
-  const { data: shareData, error: shareError } = await shareQuery;
-
-  if (shareError) {
-    console.error("Share loading error:", shareError);
-  }
-
-  const { data: shareSetting } = await supabaseClient
-    .from("share_settings")
-    .select("share_price")
-    .eq("id", 1)
-    .maybeSingle();
-
-  const sharePrice = Number(shareSetting?.share_price || 0);
-
-  const totalShares = (shareData || []).reduce((total, row) => {
-    const quantity = Number(row.quantity || 0);
-    return total + (row.kind === "purchase" ? quantity : -quantity);
-  }, 0);
-
-  const shareValue = totalShares * sharePrice;
-  const currentBalance = deposit - withdraw + shareValue;
-
   $("totalDeposit").textContent = taka(deposit);
   $("totalWithdraw").textContent = taka(withdraw);
-  $("balance").textContent = taka(currentBalance);
-  $("balanceOnly").textContent = taka(currentBalance);
+  $("balance").textContent = taka(deposit - withdraw);
+  $("balanceOnly").textContent = taka(deposit - withdraw);
 }
+
 
 async function editTransaction(id, oldAmount, oldDescription) {
   if (currentRole !== "admin") return;
@@ -1684,19 +1728,38 @@ async function resetMemberPassword() {
 // ------------------------------
 
 
+
 async function addTransaction() {
   if (currentRole !== "admin") {
     showMessage("adminMsg", "শুধু অ্যাডমিন লেনদেন যোগ করতে পারবেন।", "error");
     return;
   }
 
-  const memberId = $("memberId")?.value;
-  const amount = Number($("amount")?.value);
-  const kindValue = $("kind")?.value;
-  const description = $("note")?.value.trim() || "";
+  const memberId = $("memberId").value;
+  const shareQuantity = Number($("shareQuantity").value);
+  const amount = Number($("amount").value);
+  const kindValue = $("kind").value;
+  const fine = Number($("fine").value || 0);
+  const paymentMethod = $("paymentMethod").value;
+  const description = $("note").value.trim();
 
-  if (!memberId || !Number.isFinite(amount) || amount <= 0) {
-    showMessage("adminMsg", "সদস্য ও সঠিক পরিমাণ দিন।", "error");
+  if (!memberId) {
+    showMessage("adminMsg", "সদস্য নির্বাচন করুন।", "error");
+    return;
+  }
+
+  if (!Number.isInteger(shareQuantity) || shareQuantity < 1 || shareQuantity > 5) {
+    showMessage("adminMsg", "শেয়ারের সংখ্যা ১ থেকে ৫-এর মধ্যে নির্বাচন করুন।", "error");
+    return;
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    showMessage("adminMsg", "সঠিক টাকার পরিমাণ দিন।", "error");
+    return;
+  }
+
+  if (!Number.isFinite(fine) || fine < 0) {
+    showMessage("adminMsg", "সঠিক জরিমানার পরিমাণ দিন।", "error");
     return;
   }
 
@@ -1705,8 +1768,13 @@ async function addTransaction() {
     return;
   }
 
+  if (!["cash", "nagad", "bkash", "rocket", "bank"].includes(paymentMethod)) {
+    showMessage("adminMsg", "পেমেন্ট পদ্ধতি নির্বাচন করুন।", "error");
+    return;
+  }
+
   const btn = $("transactionBtn");
-  if (btn) btn.disabled = true;
+  btn.disabled = true;
 
   try {
     const entryDate = new Intl.DateTimeFormat("en-CA", {
@@ -1723,25 +1791,31 @@ async function addTransaction() {
         entry_date: entryDate,
         kind: kindValue === "জমা" ? "deposit" : "withdrawal",
         amount: amount,
+        share_quantity: shareQuantity,
+        fine: fine,
+        payment_method: paymentMethod,
         description: description,
         created_by: currentUser.id
       });
 
     if (error) throw error;
 
-    showMessage("adminMsg", "লেনদেন সফলভাবে সংরক্ষণ হয়েছে।", "success");
+    showMessage("adminMsg", "লেনদেন সফলভাবে সংরক্ষণ হয়েছে।", "success");
 
+    $("shareQuantity").value = "1";
     $("amount").value = "";
+    $("fine").value = "0";
+    $("kind").value = "জমা";
+    $("paymentMethod").value = "cash";
     $("note").value = "";
 
     await loadTransactions();
 
   } catch (error) {
     console.error("Transaction Error:", error);
-    showMessage("adminMsg", "লেনদেন সংরক্ষণ হয়নি: " + error.message, "error");
-
+    showMessage("adminMsg", "লেনদেন সংরক্ষণ হয়নি: " + error.message, "error");
   } finally {
-    if (btn) btn.disabled = false;
+    btn.disabled = false;
   }
 }
 
@@ -1976,37 +2050,178 @@ async function saveOrganizationTransaction(){
 }
 
 // Share Management
-async function loadShareData(){
-  const setting=await supabaseClient.from("share_settings").select("*").eq("id",1).maybeSingle();
-  if(setting.error)console.error(setting.error);
-  const price=Number(setting.data?.share_price||0);$("sharePriceView").textContent=taka(price);$("sharePriceInput").value=price||"";
-  $("shareAdminControls").classList.toggle("hidden",currentRole!=="admin");
-  let q=supabaseClient.from("share_transactions").select("*").order("entry_date",{ascending:false});
-  if(currentRole!=="admin")q=q.eq("member_id",currentUser.id);
-  const {data,error}=await q;const body=$("shareRecords");body.innerHTML="";
-  if(error){body.innerHTML=`<tr><td colspan="7">${escapeHTML(error.message)}</td></tr>`;return;}
-  const memberNames={};
-  if(currentRole==="admin"){
-    const {data:profiles}=await supabaseClient.from("profiles").select("id,member_id,full_name").eq("role","member");
-    (profiles||[]).forEach(p=>memberNames[p.id]=`${p.member_id} - ${p.full_name||"Member"}`);
+
+async function loadShareData() {
+  const setting = await supabaseClient
+    .from("share_settings")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (setting.error) console.error(setting.error);
+
+  const price = Number(setting.data?.share_price || 0);
+
+  $("sharePriceView").textContent = taka(price);
+  $("sharePriceInput").value = price || "";
+
+  $("shareAdminControls").classList.toggle(
+    "hidden",
+    currentRole !== "admin"
+  );
+
+  let q = supabaseClient
+    .from("share_transactions")
+    .select("*")
+    .order("entry_date", { ascending: false });
+
+  if (currentRole !== "admin") {
+    q = q.eq("member_id", currentUser.id);
   }
-  let my=0,total=0;
-  (data||[]).forEach(row=>{
-    const qty=Number(row.quantity||0),unit=Number(row.unit_price||0),delta=row.kind==="purchase"?qty:-qty;
-    total+=delta;if(row.member_id===currentUser.id)my+=delta;
-    const tr=document.createElement("tr");
-    [row.entry_date||"",row.member_id===currentUser.id?(currentProfile?.full_name||"Me"):(memberNames[row.member_id]||row.member_id),row.kind==="purchase"?"Purchase":"Cancellation",qty,taka(unit),taka(qty*unit)].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.appendChild(td);});
-    const td=document.createElement("td"),b=document.createElement("button");b.textContent="Print";b.className="light";
-    b.onclick=()=>printRabetaReceipt({title:"Share "+row.kind,date:row.entry_date,amount:qty*unit,quantity:qty,unitPrice:unit,receipt:row.receipt_number||row.id,description:row.description});td.appendChild(b);tr.appendChild(td);body.appendChild(tr);
+
+  const { data, error } = await q;
+  const body = $("shareRecords");
+  body.innerHTML = "";
+
+  if (error) {
+    body.innerHTML =
+      `<tr><td colspan="7">${escapeHTML(error.message)}</td></tr>`;
+    return;
+  }
+
+  const memberNames = {};
+
+  if (currentRole === "admin") {
+    const { data: profiles } = await supabaseClient
+      .from("profiles")
+      .select("id,member_id,full_name")
+      .eq("role", "member");
+
+    (profiles || []).forEach(p => {
+      memberNames[p.id] =
+        `${p.member_id} - ${p.full_name || "Member"}`;
+    });
+  }
+
+  let my = 0;
+  let total = 0;
+
+  (data || []).forEach(row => {
+    const qty = Number(row.quantity || 0);
+    const unit = Number(row.unit_price || 0);
+    const delta = row.kind === "purchase" ? qty : -qty;
+
+    total += delta;
+
+    if (row.member_id === currentUser.id) {
+      my += delta;
+    }
+
+    const tr = document.createElement("tr");
+
+    [
+      row.entry_date || "",
+      row.member_id === currentUser.id
+        ? (currentProfile?.full_name || "Me")
+        : (memberNames[row.member_id] || row.member_id),
+      row.kind === "purchase" ? "Purchase" : "Cancellation",
+      qty,
+      taka(unit),
+      taka(qty * unit)
+    ].forEach(value => {
+      const td = document.createElement("td");
+      td.textContent = value;
+      tr.appendChild(td);
+    });
+
+    const td = document.createElement("td");
+
+    const printBtn = document.createElement("button");
+    printBtn.textContent = "Print";
+    printBtn.className = "light";
+
+    printBtn.onclick = () => printRabetaReceipt({
+      title: "Share " + row.kind,
+      date: row.entry_date,
+      amount: qty * unit,
+      quantity: qty,
+      unitPrice: unit,
+      receipt: row.receipt_number || row.id,
+      description: row.description
+    });
+
+    td.appendChild(printBtn);
+
+    if (currentRole === "admin") {
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.className = "danger";
+      removeBtn.style.marginLeft = "6px";
+
+      removeBtn.onclick = () => deleteShareTransaction(row.id);
+
+      td.appendChild(removeBtn);
+    }
+
+    tr.appendChild(td);
+    body.appendChild(tr);
   });
-  $("shareQuantityView").textContent=String(currentRole==="admin"?total:my);$("shareValueView").textContent=taka((currentRole==="admin"?total:my)*price);
-  $("shareHistoryTitle").textContent=currentRole==="admin"?"সকল শেয়ার লেনদেন":"আমার শেয়ারের ইতিহাস";
-  if(currentRole==="admin"){
-    const {data:members,error:me}=await supabaseClient.from("profiles").select("id,member_id,full_name").eq("role","member").order("member_id");
-    const select=$("shareMemberSelect");select.innerHTML='<option value="">Select member</option>';
-    if(!me)(members||[]).forEach(m=>{const o=document.createElement("option");o.value=m.id;o.textContent=`${m.member_id} - ${m.full_name||"Member"}`;select.appendChild(o);});
+
+  $("shareQuantityView").textContent =
+    String(currentRole === "admin" ? total : my);
+
+  $("shareValueView").textContent =
+    taka((currentRole === "admin" ? total : my) * price);
+
+  $("shareHistoryTitle").textContent =
+    currentRole === "admin"
+      ? "সকল শেয়ার লেনদেন"
+      : "আমার শেয়ারের ইতিহাস";
+
+  if (currentRole === "admin") {
+    const { data: members, error: me } = await supabaseClient
+      .from("profiles")
+      .select("id,member_id,full_name")
+      .eq("role", "member")
+      .order("member_id");
+
+    const select = $("shareMemberSelect");
+    select.innerHTML = '<option value="">Select member</option>';
+
+    if (!me) {
+      (members || []).forEach(m => {
+        const option = document.createElement("option");
+        option.value = m.id;
+        option.textContent =
+          `${m.member_id} - ${m.full_name || "Member"}`;
+        select.appendChild(option);
+      });
+    }
   }
 }
+
+async function deleteShareTransaction(id) {
+  if (currentRole !== "admin") return;
+
+  if (!confirm("আপনি কি এই শেয়ার লেনদেনটি মুছে ফেলতে চান?")) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("share_transactions")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("মুছে ফেলা যায়নি: " + error.message);
+    return;
+  }
+
+  alert("শেয়ার লেনদেন মুছে ফেলা হয়েছে।");
+
+  await loadShareData();
+}
+
 async function saveSharePrice(){
   if(currentRole!=="admin")return;const price=Number($("sharePriceInput").value);
   if(!Number.isFinite(price)||price<=0){showMessage("shareSettingsMsg","Enter a valid share price.","error");return;}
@@ -2027,11 +2242,104 @@ async function saveShareTransaction(){
 }
 
 // Receipts and reports
-function printRabetaReceipt(info){
-  const w=window.open("","_blank","width=700,height=750");if(!w){alert("Allow pop-ups to print receipts.");return;}
-  const rows=[["Date",info.date||""],["Receipt No.",info.receipt||"—"],["Amount",taka(info.amount)],["Quantity",info.quantity??"—"],["Unit Price",info.unitPrice?taka(info.unitPrice):"—"],["Category",info.category||"—"],["Description",info.description||"—"]];
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>RABETA Receipt</title><style>body{font-family:Arial;padding:30px;color:#173b2b}h2{text-align:center}.box{border:1px solid #777;padding:20px;margin-top:25px}table{width:100%;border-collapse:collapse}td{padding:10px;border-bottom:1px solid #ddd}.foot{text-align:center;margin-top:35px}</style></head><body><h2>RABETA BUSINESS FORUM</h2><p style="text-align:center">Official Transaction Receipt</p><div class="box"><h3>${escapeHTML(info.title||"Receipt")}</h3><table>${rows.map(([k,v])=>`<tr><td><b>${escapeHTML(k)}</b></td><td>${escapeHTML(v)}</td></tr>`).join("")}</table></div><p class="foot">RABETA Business Forum</p><script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
+function printRabetaReceipt(info) {
+  const w = window.open("", "_blank", "width=700,height=750");
+
+  if (!w) {
+    alert("Allow pop-ups to print receipts.");
+    return;
+  }
+
+  const paymentLabels = {
+    cash: "Cash",
+    nagad: "Nagad",
+    bkash: "bKash",
+    rocket: "Rocket",
+    bank: "Bank"
+  };
+
+  const paymentMethod =
+    paymentLabels[info.paymentMethod] ||
+    info.paymentMethod ||
+    "—";
+
+  const shareQuantity =
+    info.shareQuantity ?? info.quantity ?? "—";
+
+  const rows = [
+    ["Date", info.date || ""],
+    ["Receipt No.", info.receipt || "—"],
+    ["Share Quantity", shareQuantity],
+    ["Transaction Amount", taka(info.amount)],
+    ["Fine", taka(info.fine || 0)],
+    ["Payment Method", paymentMethod],
+    ["Unit Price", info.unitPrice ? taka(info.unitPrice) : "—"],
+    ["Category", info.category || "—"],
+    ["Description", info.description || "—"]
+  ];
+
+  w.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>RABETA Receipt</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          padding: 30px;
+          color: #173b2b;
+        }
+        h2 {
+          text-align: center;
+        }
+        .box {
+          border: 1px solid #777;
+          padding: 20px;
+          margin-top: 25px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        td {
+          padding: 10px;
+          border-bottom: 1px solid #ddd;
+        }
+        .foot {
+          text-align: center;
+          margin-top: 35px;
+        }
+      </style>
+    </head>
+    <body>
+      <h2>RABETA BUSINESS FORUM</h2>
+      <p style="text-align:center">Official Transaction Receipt</p>
+
+      <div class="box">
+        <h3>${escapeHTML(info.title || "Receipt")}</h3>
+        <table>
+          ${rows.map(([k, v]) => `
+            <tr>
+              <td><b>${escapeHTML(k)}</b></td>
+              <td>${escapeHTML(v)}</td>
+            </tr>
+          `).join("")}
+        </table>
+      </div>
+
+      <p class="foot">RABETA Business Forum</p>
+
+      <script>
+        window.onload = () => window.print();
+      <\/script>
+    </body>
+    </html>
+  `);
+
+  w.document.close();
 }
+
 async function generateReports(){
   if(currentRole!=="admin")return;
   const period=$("reportPeriod").value,parts=rabetaDate().split("-"),yy=parts[0],mm=parts[1];
