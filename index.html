@@ -1436,10 +1436,41 @@ async function loadTransactions() {
     records.appendChild(tr);
   });
 
+   // Calculate share value
+  let shareQuery = supabaseClient
+    .from("share_transactions")
+    .select("member_id, kind, quantity");
+
+  if (currentRole !== "admin") {
+    shareQuery = shareQuery.eq("member_id", currentUser.id);
+  }
+
+  const { data: shareData, error: shareError } = await shareQuery;
+
+  if (shareError) {
+    console.error("Share loading error:", shareError);
+  }
+
+  const { data: shareSetting } = await supabaseClient
+    .from("share_settings")
+    .select("share_price")
+    .eq("id", 1)
+    .maybeSingle();
+
+  const sharePrice = Number(shareSetting?.share_price || 0);
+
+  const totalShares = (shareData || []).reduce((total, row) => {
+    const quantity = Number(row.quantity || 0);
+    return total + (row.kind === "purchase" ? quantity : -quantity);
+  }, 0);
+
+  const shareValue = totalShares * sharePrice;
+  const currentBalance = deposit - withdraw + shareValue;
+
   $("totalDeposit").textContent = taka(deposit);
   $("totalWithdraw").textContent = taka(withdraw);
-  $("balance").textContent = taka(deposit - withdraw);
-  $("balanceOnly").textContent = taka(deposit - withdraw);
+  $("balance").textContent = taka(currentBalance);
+  $("balanceOnly").textContent = taka(currentBalance);
 }
 
 async function editTransaction(id, oldAmount, oldDescription) {
