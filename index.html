@@ -1338,7 +1338,9 @@ async function addNotice() {
 
 // ------------------------------
 // লেনদেন
-// ------------------------------
+// -------------------------
+  -----
+
 
 async function loadTransactions() {
   const records = $("records");
@@ -1352,9 +1354,8 @@ async function loadTransactions() {
 
     if (error) {
       records.innerHTML =
-        "<tr><td colspan='6'>সদস্যের তথ্য পাওয়া যায়নি: " +
-        escapeHTML(error.message) +
-        "</td></tr>";
+        "<tr><td colspan='7'>সদস্যের তথ্য পাওয়া যায়নি: " +
+        escapeHTML(error.message) + "</td></tr>";
       return;
     }
 
@@ -1367,9 +1368,7 @@ async function loadTransactions() {
   let query = supabaseClient
     .from("transactions")
     .select("*")
-    .order("entry_date", {
-      ascending: false
-    });
+    .order("entry_date", { ascending: false });
 
   if (currentRole !== "admin") {
     query = query.eq("member_id", currentUser.id);
@@ -1379,9 +1378,8 @@ async function loadTransactions() {
 
   if (error) {
     records.innerHTML =
-      "<tr><td colspan='6'>তথ্য লোড হয়নি: " +
-      escapeHTML(error.message) +
-      "</td></tr>";
+      "<tr><td colspan='7'>তথ্য লোড হয়নি: " +
+      escapeHTML(error.message) + "</td></tr>";
     return;
   }
 
@@ -1391,28 +1389,33 @@ async function loadTransactions() {
   records.innerHTML = "";
 
   $("memberHead").classList.toggle(
-    "hidden",
-    currentRole !== "admin"
+    "hidden", currentRole !== "admin"
   );
 
   $("adminActionHead").classList.toggle(
-    "hidden",
-    currentRole !== "admin"
+    "hidden", currentRole !== "admin"
   );
+
+  const paymentLabels = {
+    cash: "Cash",
+    nagad: "Nagad",
+    bkash: "bKash",
+    rocket: "Rocket",
+    bank: "Bank"
+  };
 
   (data || []).forEach(item => {
     const amount = Number(item.amount || 0);
-    const type = String(item.kind || "")
-      .trim()
-      .toLowerCase();
+    const fine = Number(item.fine || 0);
+    const shareQuantity = Number(item.share_quantity || 1);
+    const type = String(item.kind || "").trim().toLowerCase();
 
     if (type === "deposit") deposit += amount;
     if (type === "withdrawal") withdraw += amount;
 
     const date = item.entry_date
-      ? new Date(
-          item.entry_date + "T00:00:00"
-        ).toLocaleDateString("bn-BD")
+      ? new Date(item.entry_date + "T00:00:00")
+          .toLocaleDateString("bn-BD")
       : "";
 
     const displayType = {
@@ -1423,6 +1426,18 @@ async function loadTransactions() {
       fine: "জরিমানা"
     }[type] || "অনির্ধারিত";
 
+    const paymentMethod =
+      paymentLabels[item.payment_method] ||
+      item.payment_method ||
+      "উল্লেখ নেই";
+
+    const details = [
+      "শেয়ার: " + shareQuantity,
+      "জরিমানা: " + taka(fine),
+      "পেমেন্ট: " + paymentMethod,
+      "বিবরণ: " + (item.description || "")
+    ].join("\n");
+
     const tr = document.createElement("tr");
 
     if (currentRole === "admin") {
@@ -1432,25 +1447,32 @@ async function loadTransactions() {
       tr.appendChild(memberCell);
     }
 
-    [
-      date,
-      displayType,
-      taka(amount),
-      item.description || ""
-    ].forEach(value => {
+    [date, displayType, taka(amount), details].forEach(value => {
       const td = document.createElement("td");
       td.textContent = value;
+      if (value === details) {
+        td.style.whiteSpace = "pre-line";
+      }
       tr.appendChild(td);
     });
 
     const receiptTd = document.createElement("td");
     const receiptBtn = document.createElement("button");
+
     receiptBtn.textContent = "Print";
     receiptBtn.className = "light";
+
     receiptBtn.onclick = () => printRabetaReceipt({
-      title: displayType, date: item.entry_date, amount,
-      receipt: item.receipt_number || item.id, description: item.description
+      title: displayType,
+      date: item.entry_date,
+      amount,
+      fine,
+      shareQuantity,
+      paymentMethod,
+      receipt: item.receipt_number || item.id,
+      description: item.description
     });
+
     receiptTd.appendChild(receiptBtn);
     tr.appendChild(receiptTd);
 
@@ -1460,17 +1482,12 @@ async function loadTransactions() {
       const editBtn = document.createElement("button");
       editBtn.textContent = "সম্পাদনা";
       editBtn.onclick = () =>
-        editTransaction(
-          item.id,
-          amount,
-          item.description || ""
-        );
+        editTransaction(item.id, amount, item.description || "");
 
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "মুছে ফেলুন";
       deleteBtn.className = "danger";
-      deleteBtn.onclick = () =>
-        deleteTransaction(item.id);
+      deleteBtn.onclick = () => deleteTransaction(item.id);
 
       td.append(editBtn, deleteBtn);
       tr.appendChild(td);
@@ -1484,6 +1501,7 @@ async function loadTransactions() {
   $("balance").textContent = taka(deposit - withdraw);
   $("balanceOnly").textContent = taka(deposit - withdraw);
 }
+
 
 async function editTransaction(id, oldAmount, oldDescription) {
   if (currentRole !== "admin") return;
@@ -2069,11 +2087,104 @@ async function saveShareTransaction(){
 }
 
 // Receipts and reports
-function printRabetaReceipt(info){
-  const w=window.open("","_blank","width=700,height=750");if(!w){alert("Allow pop-ups to print receipts.");return;}
-  const rows=[["Date",info.date||""],["Receipt No.",info.receipt||"—"],["Amount",taka(info.amount)],["Quantity",info.quantity??"—"],["Unit Price",info.unitPrice?taka(info.unitPrice):"—"],["Category",info.category||"—"],["Description",info.description||"—"]];
-  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>RABETA Receipt</title><style>body{font-family:Arial;padding:30px;color:#173b2b}h2{text-align:center}.box{border:1px solid #777;padding:20px;margin-top:25px}table{width:100%;border-collapse:collapse}td{padding:10px;border-bottom:1px solid #ddd}.foot{text-align:center;margin-top:35px}</style></head><body><h2>RABETA BUSINESS FORUM</h2><p style="text-align:center">Official Transaction Receipt</p><div class="box"><h3>${escapeHTML(info.title||"Receipt")}</h3><table>${rows.map(([k,v])=>`<tr><td><b>${escapeHTML(k)}</b></td><td>${escapeHTML(v)}</td></tr>`).join("")}</table></div><p class="foot">RABETA Business Forum</p><script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();
+function printRabetaReceipt(info) {
+  const w = window.open("", "_blank", "width=700,height=750");
+
+  if (!w) {
+    alert("Allow pop-ups to print receipts.");
+    return;
+  }
+
+  const paymentLabels = {
+    cash: "Cash",
+    nagad: "Nagad",
+    bkash: "bKash",
+    rocket: "Rocket",
+    bank: "Bank"
+  };
+
+  const paymentMethod =
+    paymentLabels[info.paymentMethod] ||
+    info.paymentMethod ||
+    "—";
+
+  const shareQuantity =
+    info.shareQuantity ?? info.quantity ?? "—";
+
+  const rows = [
+    ["Date", info.date || ""],
+    ["Receipt No.", info.receipt || "—"],
+    ["Share Quantity", shareQuantity],
+    ["Transaction Amount", taka(info.amount)],
+    ["Fine", taka(info.fine || 0)],
+    ["Payment Method", paymentMethod],
+    ["Unit Price", info.unitPrice ? taka(info.unitPrice) : "—"],
+    ["Category", info.category || "—"],
+    ["Description", info.description || "—"]
+  ];
+
+  w.document.write(`
+    <!doctype html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>RABETA Receipt</title>
+      <style>
+        body {
+          font-family: Arial, sans-serif;
+          padding: 30px;
+          color: #173b2b;
+        }
+        h2 {
+          text-align: center;
+        }
+        .box {
+          border: 1px solid #777;
+          padding: 20px;
+          margin-top: 25px;
+        }
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        td {
+          padding: 10px;
+          border-bottom: 1px solid #ddd;
+        }
+        .foot {
+          text-align: center;
+          margin-top: 35px;
+        }
+      </style>
+    </head>
+    <body>
+      <h2>RABETA BUSINESS FORUM</h2>
+      <p style="text-align:center">Official Transaction Receipt</p>
+
+      <div class="box">
+        <h3>${escapeHTML(info.title || "Receipt")}</h3>
+        <table>
+          ${rows.map(([k, v]) => `
+            <tr>
+              <td><b>${escapeHTML(k)}</b></td>
+              <td>${escapeHTML(v)}</td>
+            </tr>
+          `).join("")}
+        </table>
+      </div>
+
+      <p class="foot">RABETA Business Forum</p>
+
+      <script>
+        window.onload = () => window.print();
+      <\/script>
+    </body>
+    </html>
+  `);
+
+  w.document.close();
 }
+
 async function generateReports(){
   if(currentRole!=="admin")return;
   const period=$("reportPeriod").value,parts=rabetaDate().split("-"),yy=parts[0],mm=parts[1];
