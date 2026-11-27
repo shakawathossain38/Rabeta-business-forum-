@@ -600,7 +600,50 @@ header p{
 
 <div class="card"><h3>সদস্যের পাসওয়ার্ড রিসেট</h3><label>সদস্য নির্বাচন</label><select id="resetMemberId"></select><label>নতুন পাসওয়ার্ড</label><input id="resetPassword" type="password"><button id="resetPasswordBtn">পাসওয়ার্ড পরিবর্তন</button><p id="resetMsg" class="message"></p></div>
 
-<div class="card"><h3>সদস্যের জমা/উত্তোলন যোগ করুন</h3><label>সদস্য নির্বাচন</label><select id="memberId"></select><label>পরিমাণ</label><input id="amount" type="number" min="1"><label>লেনদেনের ধরন</label><select id="kind"><option value="জমা">জমা</option><option value="উত্তোলন">উত্তোলন</option></select><label>বিবরণ</label><input id="note" placeholder="যেমন: মাসিক সঞ্চয়"><button id="transactionBtn">লেনদেন সংরক্ষণ</button><p id="adminMsg" class="message"></p></div>
+
+<div class="card">
+  <h3>সদস্যের জমা/উত্তোলন যোগ করুন</h3>
+
+  <label>সদস্য নির্বাচন</label>
+  <select id="memberId"></select>
+
+  <label>শেয়ারের সংখ্যা</label>
+  <select id="shareQuantity">
+    <option value="1">১</option>
+    <option value="2">২</option>
+    <option value="3">৩</option>
+    <option value="4">৪</option>
+    <option value="5">৫</option>
+  </select>
+
+  <label>টাকার পরিমাণ</label>
+  <input id="amount" type="number" min="0.01" step="0.01">
+
+  <label>লেনদেনের ধরন</label>
+  <select id="kind">
+    <option value="জমা">জমা</option>
+    <option value="উত্তোলন">উত্তোলন</option>
+  </select>
+
+  <label>জরিমানা</label>
+  <input id="fine" type="number" min="0" step="0.01" value="0">
+
+  <label>পেমেন্ট পদ্ধতি</label>
+  <select id="paymentMethod">
+    <option value="cash">Cash</option>
+    <option value="nagad">Nagad</option>
+    <option value="bkash">bKash</option>
+    <option value="rocket">Rocket</option>
+    <option value="bank">Bank</option>
+  </select>
+
+  <label>বিবরণ</label>
+  <input id="note" placeholder="যেমন: মাসিক সঞ্চয়">
+
+  <button id="transactionBtn">লেনদেন সংরক্ষণ</button>
+  <p id="adminMsg" class="message"></p>
+</div>
+
 
 <div class="card"><h3>সদস্যদের প্রোফাইল সম্পাদনা</h3><div id="adminProfiles">লোড হচ্ছে...</div></div>
 <div class="card hidden" id="adminEditCard">
