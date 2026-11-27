@@ -755,33 +755,6 @@ async function signedPhoto(path) {
 // লগইন
 // ------------------------------
 
-async function signIn() {
-  const loginId = $("loginId").value.trim();
-  const password = $("password").value;
-  if (!loginId || !password) return showMessage("loginMsg", "Member ID and password required.", "error");
-  const btn = $("loginBtn");
-  btn.disabled = true;
-  const email = validMemberId(loginId) ? loginId.toLowerCase() + "@members.rabeta.local" : loginId;
-  try {
-    const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    currentUser = data.user;
-    const { data: profile, error: profileError } = await supabaseClient
-      .from("profiles").select("role,is_active").eq("id", currentUser.id).single();
-    if (profileError || !profile) {
-      await supabaseClient.auth.signOut(); currentUser = null;
-      throw new Error("Account profile not found.");
-    }
-    if (profile.role !== "admin" && profile.is_active === false) {
-      await supabaseClient.auth.signOut(); currentUser = null;
-      throw new Error("Your account is inactive. Please contact Admin.");
-    }
-    await loadDashboard();
-  } catch (error) {
-    showMessage("loginMsg", "Login failed: " + error.message, "error");
-  } finally { btn.disabled = false; }
-}
-
 // ------------------------------
 // লগআউট
 // ------------------------------
