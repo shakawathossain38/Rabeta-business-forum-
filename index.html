@@ -755,6 +755,50 @@ async function signedPhoto(path) {
 // লগইন
 // ------------------------------
 
+async function signIn() {
+  const loginId = $("loginId").value.trim();
+  const password = $("password").value;
+
+  if (!loginId || !password) {
+    showMessage("loginMsg", "লগইন আইডি ও পাসওয়ার্ড দিন।", "error");
+    return;
+  }
+
+  const btn = $("loginBtn");
+  btn.disabled = true;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from("profiles")
+      .select("email")
+      .or(`member_id.eq.${loginId},email.eq.${loginId}`)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (!data || !data.email) {
+      throw new Error("লগইন আইডি সঠিক নয়।");
+    }
+
+    const { data: authData, error: authError } =
+      await supabaseClient.auth.signInWithPassword({
+        email: data.email,
+        password: password
+      });
+
+    if (authError) throw authError;
+
+    currentUser = authData.user;
+
+  await loadDashboard();
+  } catch (error) {
+    console.error("Login Error:", error);
+    showMessage("loginMsg", "লগইন ব্যর্থ: " + error.message, "error");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 // ------------------------------
 // লগআউট
 // ------------------------------
