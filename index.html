@@ -12,7 +12,7 @@
 <style>
 :root{--green:#145c42;--green2:#16734f;--ink:#18372c;--muted:#718078;--bg:#f3f7f4;--line:#e4ece6;--white:#fff}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,"Noto Sans Bengali",sans-serif;padding-bottom:78px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,Arial,sans-serif;padding-bottom:78px}
 header{background:linear-gradient(135deg,#104c37,#1b7652);color:#fff;padding:20px 16px 24px;text-align:center}
 header h2{margin:0;font-size:21px}header p{margin:5px 0 0;font-size:13px;opacity:.9}
 .container{width:min(100% - 24px,920px);margin:18px auto}
@@ -281,7 +281,7 @@ header p{
 </header>
 
 <div class="notice-ticker">
-  <span class="ticker-label">📢 নোটিশ</span>
+  <span class="ticker-label">📢 Notice</span>
   <div class="ticker-window">
     <div id="tickerText" class="ticker-text">
       Loading notices...
@@ -291,24 +291,24 @@ header p{
 
 <main class="container">
 <section class="card" id="login">
-<h3>সদস্য লগইন</h3>
-<label>সদস্য আইডি অথবা অ্যাডমিন ইমেইল</label><input id="loginId" placeholder="যেমন: RABETA001" autocomplete="username">
-<label>পাসওয়ার্ড</label><input id="password" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password">
-<button id="loginBtn">লগইন</button><button type="button" class="secondary" onclick="showForgotPassword()">
-  পাসওয়ার্ড ভুলে গেছেন?
+<h3>Member Login</h3>
+<label>Member ID or Admin Email</label><input id="loginId" placeholder="e.g. RABETA001" autocomplete="username">
+<label>Password</label><input id="password" type="password" placeholder="Password" autocomplete="current-password">
+<button id="loginBtn">Login</button><button type="button" class="secondary" onclick="showForgotPassword()">
+  Forgot Password?
 </button><p id="loginMsg" class="message"></p>
   <div id="forgotPasswordArea" class="hidden">
-  <h3>পাসওয়ার্ড পুনরুদ্ধার</h3>
+  <h3>Password Recovery</h3>
 
-  <label>সদস্য আইডি অথবা অ্যাডমিন ইমেইল</label>
-  <input id="recoveryId" placeholder="RABETA001 অথবা অ্যাডমিন ইমেইল">
+  <label>Member ID or Admin Email</label>
+  <input id="recoveryId" placeholder="RABETA001 or Admin Email">
 
   <button type="button" onclick="submitPasswordRecovery()">
-    অনুরোধ পাঠান
+    Submit Request
   </button>
 
   <button type="button" class="secondary" onclick="hideForgotPassword()">
-    ফিরে যান
+    Go Back
   </button>
 
   <p id="recoveryMsg" class="message"></p>
@@ -317,9 +317,9 @@ header p{
 
 <section id="dashboard" class="hidden">
 <section class="card">
-<div class="section-title"><h3 id="welcome">স্বাগতম</h3><button class="secondary" id="logoutBtn">লগআউট</button></div>
+<div class="section-title"><h3 id="welcome">Welcome</h3><button class="secondary" id="logoutBtn">Logout</button></div>
 <div id="memberSummary" class="profile-head hidden">
-<img id="summaryPhoto" class="profile-photo" alt="সদস্যের ছবি">
+<img id="summaryPhoto" class="profile-photo" alt="Member Photo">
 <div class="profile-meta"><h3 id="summaryName"></h3><p id="summaryCode"></p><p id="summaryPhone"></p></div>
 </div>
 </section>
@@ -329,14 +329,14 @@ header p{
 <section id="memberProfileArea" class="card">
 
   <button class="secondary" onclick="showHomePage()">
-    ← হোমে ফিরুন
+    ← Back to Home
   </button>
 
   <div id="memberProfileView" class="hidden">
 
     <div class="profile-header">
       <div id="profileHeaderPhoto" class="profile-avatar">👤</div>
-      <h2 id="profileHeaderName">সদস্যের নাম</h2>
+      <h2 id="profileHeaderName">Member Name</h2>
       <p>Member ID: <span id="profileHeaderCode">—</span></p>
     </div>
 
@@ -344,30 +344,30 @@ header p{
     <div class="profile-accordion">
 
       <details open>
-        <summary>Academic Information <span>শিক্ষাগত তথ্য</span></summary>
+        <summary>Academic Information <span>Educational Information</span></summary>
         <div class="profile-info">
-          <p>শিক্ষাগত যোগ্যতা: <strong id="viewEducation">—</strong></p>
-          <p>পেশা: <strong id="viewOccupation">—</strong></p>
+          <p>Education: <strong id="viewEducation">—</strong></p>
+          <p>Occupation: <strong id="viewOccupation">—</strong></p>
         </div>
       </details>
 
       <details>
-        <summary>Personal Information <span>ব্যক্তিগত তথ্য</span></summary>
+        <summary>Personal Information <span>Personal Information</span></summary>
         <div class="profile-info">
-          <p>সম্পূর্ণ নাম: <strong id="viewFullName">—</strong></p>
-          <p>জন্ম তারিখ: <strong id="viewDob">—</strong></p>
-          <p>রক্তের গ্রুপ: <strong id="viewBloodGroup">—</strong></p>
-          <p>মোবাইল: <strong id="viewPhone">—</strong></p>
-          <p>ঠিকানা: <strong id="viewAddress">—</strong></p>
-          <p>নিজের সম্পর্কে: <strong id="viewAbout">—</strong></p>
+          <p>Full Name: <strong id="viewFullName">—</strong></p>
+          <p>Date of Birth: <strong id="viewDob">—</strong></p>
+          <p>Blood Group: <strong id="viewBloodGroup">—</strong></p>
+          <p>Mobile: <strong id="viewPhone">—</strong></p>
+          <p>Address: <strong id="viewAddress">—</strong></p>
+          <p>About Me: <strong id="viewAbout">—</strong></p>
         </div>
       </details>
 
       <details>
-        <summary>Guardian Information <span>অভিভাবকের তথ্য</span></summary>
+        <summary>Guardian Information <span>Guardian Information</span></summary>
         <div class="profile-info">
-          <p>পিতার নাম: <strong id="viewFatherName">—</strong></p>
-          <p>মাতার নাম: <strong id="viewMotherName">—</strong></p>
+          <p>Father’s Name: <strong id="viewFatherName">—</strong></p>
+          <p>Mother’s Name: <strong id="viewMotherName">—</strong></p>
         </div>
       </details>
 
@@ -375,38 +375,38 @@ header p{
   </div>
 
   <div id="memberProfileForm" class="hidden">
-    <h3>সদস্য প্রোফাইল তৈরি করুন</h3>
+    <h3>Create Member Profile</h3>
 
-    <label>প্রোফাইল ছবি</label>
+    <label>Profile Photo</label>
     <input type="file" id="profilePhoto" accept="image/jpeg,image/png,image/webp">
 
-    <label>সম্পূর্ণ নাম</label>
+    <label>Full Name</label>
     <input id="profileFullName">
 
     <div class="form-grid">
-      <div><label>পিতার নাম</label><input id="fatherName"></div>
-      <div><label>মাতার নাম</label><input id="motherName"></div>
-      <div><label>জন্ম তারিখ</label><input id="dateOfBirth" type="date"></div>
+      <div><label>Father’s Name</label><input id="fatherName"></div>
+      <div><label>Mother’s Name</label><input id="motherName"></div>
+      <div><label>Date of Birth</label><input id="dateOfBirth" type="date"></div>
       <div>
-        <label>রক্তের গ্রুপ</label>
+        <label>Blood Group</label>
         <select id="bloodGroup">
-          <option value="">নির্বাচন করুন</option>
+          <option value="">Select</option>
           <option>A+</option><option>A-</option>
           <option>B+</option><option>B-</option>
           <option>AB+</option><option>AB-</option>
           <option>O+</option><option>O-</option>
         </select>
       </div>
-      <div><label>মোবাইল নম্বর</label><input id="profilePhone" type="tel"></div>
-      <div><label>শিক্ষাগত যোগ্যতা</label><input id="profileEducation"></div>
-      <div><label>পেশা</label><input id="profileOccupation"></div>
-      <div><label>ঠিকানা</label><input id="profileAddress"></div>
+      <div><label>Mobile Number</label><input id="profilePhone" type="tel"></div>
+      <div><label>Education</label><input id="profileEducation"></div>
+      <div><label>Occupation</label><input id="profileOccupation"></div>
+      <div><label>Address</label><input id="profileAddress"></div>
     </div>
 
-    <label>নিজের সম্পর্কে</label>
+    <label>About Me</label>
     <textarea id="profileAbout"></textarea>
 
-    <button id="saveMemberProfile">প্রোফাইল সংরক্ষণ</button>
+    <button id="saveMemberProfile">Save Profile</button>
     <p id="profileMessage" class="message"></p>
   </div>
 
@@ -414,12 +414,12 @@ header p{
 
 
 <section class="card" id="memberMenu">
-  <h3>সেবা মেনু</h3>
+  <h3>Services Menu</h3>
 
   <div class="menu-grid">
     <div class="menu-item" data-target="accountCard">
       <i data-lucide="wallet" class="digital-icon"></i>
-      <span>সঞ্চয়ের হিসাব</span>
+      <span>Savings Account</span>
     </div>
 
     <div class="menu-item" data-target="organizationCard"><i data-lucide="building-2" class="digital-icon"></i><span>Organization Accounts</span></div>
@@ -427,72 +427,72 @@ header p{
     <div class="menu-item hidden" id="reportsMenuItem" data-target="reportsCard"><i data-lucide="file-chart-column" class="digital-icon"></i><span>Reports</span></div>
     <div class="menu-item" data-target="noticeCard">
       <i data-lucide="bell" class="digital-icon"></i>
-      <span>নোটিশ</span>
+      <span>Notice</span>
     </div>
 <div class="menu-item" data-target="recordsCard">
   <i data-lucide="book-open" class="digital-icon"></i>
-  <span>লেনদেন</span>
+  <span>Transactions</span>
 </div>
 <div class="menu-item" data-target="balanceCard">
       <i data-lucide="chart-no-axes-combined" class="digital-icon"></i>
-      <span>ব্যালেন্স চেক</span>
+      <span>Check Balance</span>
     </div>
 
     <div class="menu-item" data-target="helpCard">
       <i data-lucide="headset" class="digital-icon"></i>
-      <span>যোগাযোগ</span>
+      <span>Contact</span>
     </div>
 
     <div class="menu-item" data-target="memberProfileArea">
       <i data-lucide="user-round" class="digital-icon"></i>
-      <span>আমার প্রোফাইল</span>
+      <span>My Profile</span>
     </div>
     <div class="menu-item hidden" id="adminMenuItem" data-target="admin">
   <i data-lucide="shield-check" class="digital-icon"></i>
-  <span>অ্যাডমিন প্যানেল</span>
+  <span>Admin Panel</span>
     </div>
   </div>
 </section>
 
 
 <section class="card" id="accountCard">
-<h3>আমার সঞ্চয়ের হিসাব</h3>
+<h3>My Savings Account</h3>
   <button class="secondary" onclick="showHomePage()">
-  ← হোমে ফিরুন
+  ← Back to Home
   </button>
 <div class="stats">
-<div class="stat"><span>মোট জমা</span><strong id="totalDeposit">৳ ০</strong></div>
-<div class="stat"><span>মোট উত্তোলন</span><strong id="totalWithdraw">৳ ০</strong></div>
-<div class="stat"><span>বর্তমান ব্যালেন্স</span><strong id="balance">৳ ০</strong></div>
+<div class="stat"><span>Total Deposits</span><strong id="totalDeposit">৳ 0</strong></div>
+<div class="stat"><span>Total Withdrawals</span><strong id="totalWithdraw">৳ 0</strong></div>
+<div class="stat"><span>Current Balance</span><strong id="balance">৳ 0</strong></div>
 </div>
 </section>
-<!-- এখানে নতুন কোড বসাবে -->
+<!-- Insert new code here -->
 <section class="card" id="balanceCard">
-  <h3>আমার বর্তমান ব্যালেন্স</h3>
+  <h3>My Current Balance</h3>
   <button class="secondary" onclick="showHomePage()">
-  ← হোমে ফিরুন
+  ← Back to Home
   </button>
   <div class="stat">
-    <span>বর্তমান ব্যালেন্স</span>
-    <strong id="balanceOnly">৳ ০</strong>
+    <span>Current Balance</span>
+    <strong id="balanceOnly">৳ 0</strong>
   </div>
 </section>
 <section class="card" id="recordsCard">
   <button class="secondary" onclick="showHomePage()">
-  ← হোমে ফিরুন
+  ← Back to Home
   </button>
-  <h3>লেনদেনের বিবরণ</h3>
+  <h3>Transaction Details</h3>
   <div class="table-wrap">
     <table>
 <thead>
   <tr>
-    <th id="memberHead" class="hidden">সদস্য</th>
-    <th>তারিখ</th>
-    <th>ধরন</th>
-    <th>পরিমাণ</th>
-    <th>বিবরণ</th>
+    <th id="memberHead" class="hidden">Member</th>
+    <th>Date</th>
+    <th>Type</th>
+    <th>Amount</th>
+    <th>Description</th>
     <th>Receipt</th>
-    <th id="adminActionHead" class="hidden">অ্যাকশন</th>
+    <th id="adminActionHead" class="hidden">Action</th>
   </tr>
 </thead>
       <tbody id="records"></tbody>
@@ -520,18 +520,18 @@ header p{
 <section class="card hidden" id="reportsCard"><div class="section-title"><h3>Reports</h3><button class="secondary" onclick="showHomePage()">← Home</button></div>
 <label>Period</label><select id="reportPeriod"><option value="month">Current Month</option><option value="year">Current Year</option><option value="all">All Time</option></select><button id="loadReportsBtn">Generate Report</button><div id="reportResults"></div><button class="secondary" id="printReportsBtn">Print Report</button></section>
 <section class="card" id="noticeCard">
-  <h3>সংগঠনের নোটিশ</h3>
+  <h3>Organization Notices</h3>
 <button class="secondary" onclick="showHomePage()">
-  ← হোমে ফিরুন
+  ← Back to Home
 </button>
   <div id="adminNoticeForm" class="hidden">
-    <label>নোটিশের শিরোনাম</label>
-    <input id="noticeTitle" type="text" placeholder="নোটিশের শিরোনাম লিখুন">
+    <label>Notice Title</label>
+    <input id="noticeTitle" type="text" placeholder="Enter notice title">
 
-    <label>নোটিশের বিবরণ</label>
-    <textarea id="noticeContent" rows="4" placeholder="নোটিশের বিস্তারিত লিখুন"></textarea>
+    <label>Notice Details</label>
+    <textarea id="noticeContent" rows="4" placeholder="Enter notice details"></textarea>
 
-    <button onclick="addNotice()">নোটিশ প্রকাশ করুন</button>
+    <button onclick="addNotice()">Publish Notice</button>
     <p id="noticeMsg" class="small"></p>
   </div>
 
@@ -542,14 +542,14 @@ header p{
 
 
 <section class="card" id="helpCard">
-  <h3>যোগাযোগ</h3>
+  <h3>Contact</h3>
 
   <button class="secondary" onclick="showHomePage()">
-    ← হোমে ফিরুন
+    ← Back to Home
   </button>
 
   <p class="small">
-    প্রয়োজনে সংগঠনের দায়িত্বশীল ব্যক্তির সঙ্গে যোগাযোগ করুন।
+    Please contact an authorized representative of the organization if needed.
   </p>
 
   <div class="contact-section">
@@ -557,24 +557,24 @@ header p{
     <div class="contact-item">
       <strong>Facebook</strong>
       <a href="https://www.facebook.com/msh.shakawat.h?mibextid=ZbWKwL" target="_blank" rel="noopener">
-        Facebook প্রোফাইল
+        Facebook Profile
       </a>
     </div>
 
     <div class="contact-item">
       <strong>WhatsApp</strong>
       <a href="https://wa.me/qr/UGVHF5DG7ZXMG1?s=v" target="_blank" rel="noopener">
-        WhatsApp-এ যোগাযোগ
+        Contact via WhatsApp
       </a>
     </div>
 
     <div class="contact-item">
-      <strong>মোবাইল</strong>
+      <strong>Mobile</strong>
       <a href="tel:+8801923606138">+8801923606138</a>
     </div>
 
     <div class="contact-item">
-      <strong>ইমেইল</strong>
+      <strong>Email</strong>
       <a href="mailto:m.s.mediamatarbari@gmail.com">
         m.s.mediamatarbari@gmail.com
       </a>
@@ -586,52 +586,52 @@ header p{
 
 <section id="admin" class="hidden">
   <button class="secondary" onclick="showHomePage()">
-  ← হোমে ফিরুন
+  ← Back to Home
   </button>
-<div class="card"><h3>অ্যাডমিন: সদস্য অ্যাকাউন্ট তৈরি</h3>
-<label>সদস্যের নাম</label><input id="newMemberName">
-<label>মোবাইল নম্বর</label><input id="newMemberPhone" type="tel">
-<label>ইমেইল ঠিকানা (ঐচ্ছিক)</label><input id="newMemberEmail" type="email">
+<div class="card"><h3>Admin: Create Member Account</h3>
+<label>Member Name</label><input id="newMemberName">
+<label>Mobile Number</label><input id="newMemberPhone" type="tel">
+<label>Email Address (Optional)</label><input id="newMemberEmail" type="email">
 <p class="message">Member ID will be generated automatically.</p>
-<label>পাসওয়ার্ড</label><input id="newMemberPassword" type="password">
-<button id="createAccountBtn">অ্যাকাউন্ট তৈরি করুন</button><p id="createMsg" class="message"></p></div>
+<label>Password</label><input id="newMemberPassword" type="password">
+<button id="createAccountBtn">Create Account</button><p id="createMsg" class="message"></p></div>
 
 <div class="card"><h3>Member Account Management</h3><div id="adminMemberStatusList">Loading members...</div></div>
 
-<div class="card"><h3>সদস্যের পাসওয়ার্ড রিসেট</h3><label>সদস্য নির্বাচন</label><select id="resetMemberId"></select><label>নতুন পাসওয়ার্ড</label><input id="resetPassword" type="password"><button id="resetPasswordBtn">পাসওয়ার্ড পরিবর্তন</button><p id="resetMsg" class="message"></p></div>
+<div class="card"><h3>Reset Member Password</h3><label>Select Member</label><select id="resetMemberId"></select><label>New Password</label><input id="resetPassword" type="password"><button id="resetPasswordBtn">Change Password</button><p id="resetMsg" class="message"></p></div>
 
-<div class="card"><h3>সদস্যের জমা/উত্তোলন যোগ করুন</h3><label>সদস্য নির্বাচন</label><select id="memberId"></select><label>পরিমাণ</label><input id="amount" type="number" min="1"><label>লেনদেনের ধরন</label><select id="kind"><option value="জমা">জমা</option><option value="উত্তোলন">উত্তোলন</option></select><label>বিবরণ</label><input id="note" placeholder="যেমন: মাসিক সঞ্চয়"><button id="transactionBtn">লেনদেন সংরক্ষণ</button><p id="adminMsg" class="message"></p></div>
+<div class="card"><h3>Add Member Deposit/Withdrawal</h3><label>Select Member</label><select id="memberId"></select><label>Amount</label><input id="amount" type="number" min="1"><label>Transaction Type</label><select id="kind"><option value="জমা">Deposit</option><option value="উত্তোলন">Withdrawal</option></select><label>Description</label><input id="note" placeholder="e.g. Monthly Savings"><button id="transactionBtn">Save Transaction</button><p id="adminMsg" class="message"></p></div>
 
-<div class="card"><h3>সদস্যদের প্রোফাইল সম্পাদনা</h3><div id="adminProfiles">লোড হচ্ছে...</div></div>
+<div class="card"><h3>Edit Member Profiles</h3><div id="adminProfiles">Loading...</div></div>
 <div class="card hidden" id="adminEditCard">
-<div class="section-title"><h3>সদস্যের প্রোফাইল সম্পাদনা</h3><button class="secondary" id="closeEditBtn">বন্ধ</button></div>
+<div class="section-title"><h3>Edit Member Profile</h3><button class="secondary" id="closeEditBtn">Close</button></div>
 <input id="editUserId" type="hidden">
-<label>প্রোফাইল ছবি পরিবর্তন</label><input id="editPhoto" type="file" accept="image/jpeg,image/png,image/webp">
+<label>Change Profile Photo</label><input id="editPhoto" type="file" accept="image/jpeg,image/png,image/webp">
 <div id="editPhotoPreview"></div>
-<label>সম্পূর্ণ নাম</label><input id="editFullName">
+<label>Full Name</label><input id="editFullName">
 <div class="form-grid">
-<div><label>পিতার নাম</label><input id="editFatherName"></div><div><label>মাতার নাম</label><input id="editMotherName"></div>
-<div><label>জন্ম তারিখ</label><input id="editDob" type="date"></div><div><label>রক্তের গ্রুপ</label><select id="editBlood"><option value="">নির্বাচন করুন</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
-<div><label>মোবাইল নম্বর</label><input id="editPhone" type="tel"></div><div><label>শিক্ষাগত যোগ্যতা</label><input id="editEducation"></div>
-<div><label>পেশা</label><input id="editOccupation"></div><div><label>ঠিকানা</label><input id="editAddress"></div>
+<div><label>Father’s Name</label><input id="editFatherName"></div><div><label>Mother’s Name</label><input id="editMotherName"></div>
+<div><label>Date of Birth</label><input id="editDob" type="date"></div><div><label>Blood Group</label><select id="editBlood"><option value="">Select</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+<div><label>Mobile Number</label><input id="editPhone" type="tel"></div><div><label>Education</label><input id="editEducation"></div>
+<div><label>Occupation</label><input id="editOccupation"></div><div><label>Address</label><input id="editAddress"></div>
 </div>
-<label>নিজের সম্পর্কে</label><textarea id="editAbout"></textarea>
-<label>সদস্য হওয়ার তারিখ</label><input id="editJoinDate" type="date">
-<button id="saveAdminEditBtn">পরিবর্তন সংরক্ষণ</button><p id="editMessage" class="message"></p>
+<label>About Me</label><textarea id="editAbout"></textarea>
+<label>Membership Date</label><input id="editJoinDate" type="date">
+<button id="saveAdminEditBtn">Save Changes</button><p id="editMessage" class="message"></p>
 </div>
 </section>
 </section>
   <section class="card hidden" id="resetPasswordPage">
-  <h3>নতুন পাসওয়ার্ড সেট করুন</h3>
+  <h3>Set New Password</h3>
 
-  <label>নতুন পাসওয়ার্ড</label>
-  <input id="newPassword" type="password" placeholder="নতুন পাসওয়ার্ড">
+  <label>New Password</label>
+  <input id="newPassword" type="password" placeholder="New Password">
 
-  <label>পাসওয়ার্ড আবার লিখুন</label>
-  <input id="confirmPassword" type="password" placeholder="পাসওয়ার্ড নিশ্চিত করুন">
+  <label>Re-enter Password</label>
+  <input id="confirmPassword" type="password" placeholder="Confirm Password">
 
   <button type="button" onclick="updateNewPassword()">
-    পাসওয়ার্ড পরিবর্তন করুন
+    Update Password
   </button>
 
   <p id="resetPasswordMsg" class="message"></p>
@@ -639,7 +639,7 @@ header p{
 </main>
 <footer>RABETA Business Forum</footer>
 <nav id="bottomNav" class="bottom-nav hidden">
-<button class="active" data-nav="home"><span>⌂</span>হোম</button><button data-nav="notice"><span>♧</span>নোটিশ</button><button data-nav="menu"><span>☰</span>মেনু</button>
+<button class="active" data-nav="home"><span>⌂</span>Home</button><button data-nav="notice"><span>♧</span>Notice</button><button data-nav="menu"><span>☰</span>Menu</button>
 </nav>
 
 <script>
@@ -658,7 +658,7 @@ let currentRole = null;
 let currentProfile = null;
 let passwordRecoveryMode = false;
 // ------------------------------
-// সাধারণ সহায়ক ফাংশন
+// General Helper Functions
 // ------------------------------
 
 function showMessage(id, msg, type = "success") {
@@ -670,7 +670,7 @@ function showMessage(id, msg, type = "success") {
 }
 
 function taka(n) {
-  return "৳ " + Number(n || 0).toLocaleString("bn-BD");
+  return "৳ " + Number(n || 0).toLocaleString("en-US");
 }
 
 function escapeHTML(value) {
@@ -709,7 +709,7 @@ async function signedPhoto(path) {
 }
 
 // ------------------------------
-// লগইন
+// Login
 // ------------------------------
 
 async function signIn() {
@@ -740,14 +740,14 @@ async function signIn() {
 }
 
 // ------------------------------
-// লগআউট
+// Logout
 // ------------------------------
 
 async function logout() {
   const { error } = await supabaseClient.auth.signOut();
 
   if (error) {
-    alert("লগআউট করা যায়নি: " + error.message);
+    alert("Could not log out: " + error.message);
     return;
   }
 
@@ -768,7 +768,7 @@ async function logout() {
 }
 
 // ------------------------------
-// অ্যাপ চালু
+// App Initialization
 // ------------------------------
 
 async function initialize() {
@@ -813,7 +813,7 @@ async function loadDashboard() {
 
     if (error || !profile) {
       alert(
-        "অ্যাকাউন্ট প্রোফাইল পাওয়া যায়নি: " +
+        "Account profile not found: " +
         (error?.message || "")
       );
       return;
@@ -836,7 +836,7 @@ async function loadDashboard() {
     $("bottomNav").classList.remove("hidden");
 
     $("welcome").textContent =
-      "স্বাগতম, " + (profile.full_name || currentUser.email);
+      "Welcome, " + (profile.full_name || currentUser.email);
 
     const isAdmin = currentRole === "admin";
 
@@ -869,12 +869,12 @@ async function loadDashboard() {
 
   } catch (error) {
     console.error("Dashboard error:", error);
-    alert("ড্যাশবোর্ড লোড করা যায়নি: " + error.message);
+    alert("Could not load dashboard: " + error.message);
   }
 }
 
 // ------------------------------
-// হোম পেজ ও মেনু
+// Home পেজ ও Menu
 // ------------------------------
 
 function showHomePage() {
@@ -955,11 +955,11 @@ function openServicePage(id) {
 }
 
 // ------------------------------
-// বাংলা, ইংরেজি ও হিজরি তারিখ
+// Date Formats
 // ------------------------------
 
 // ------------------------------
-// সদস্য প্রোফাইল
+// Member Profile
 // ------------------------------
 
 async function loadMemberProfile() {
@@ -1011,7 +1011,7 @@ async function loadMemberProfile() {
   if (photo) {
     const img = document.createElement("img");
     img.src = photo;
-    img.alt = "প্রোফাইল ছবি";
+    img.alt = "Profile Photo";
     avatar.replaceChildren(img);
   }
 
@@ -1023,34 +1023,34 @@ async function loadMemberProfile() {
   $("profileHeaderCode").textContent = memberCode;
 
   $("viewEducation").textContent =
-    data.education || "তথ্য নেই";
+    data.education || "Not provided";
 
   $("viewOccupation").textContent =
-    data.occupation || "তথ্য নেই";
+    data.occupation || "Not provided";
 
   $("viewFullName").textContent =
-    data.full_name || "তথ্য নেই";
+    data.full_name || "Not provided";
 
   $("viewDob").textContent =
-    data.date_of_birth || "তথ্য নেই";
+    data.date_of_birth || "Not provided";
 
   $("viewBloodGroup").textContent =
-    data.blood_group || "তথ্য নেই";
+    data.blood_group || "Not provided";
 
   $("viewPhone").textContent =
-    data.phone || "তথ্য নেই";
+    data.phone || "Not provided";
 
   $("viewAddress").textContent =
-    data.address || "তথ্য নেই";
+    data.address || "Not provided";
 
   $("viewAbout").textContent =
-    data.about || "তথ্য নেই";
+    data.about || "Not provided";
 
   $("viewFatherName").textContent =
-    data.father_name || "তথ্য নেই";
+    data.father_name || "Not provided";
 
   $("viewMotherName").textContent =
-    data.mother_name || "তথ্য নেই";
+    data.mother_name || "Not provided";
 
   $("summaryName").textContent =
     data.full_name || "";
@@ -1071,7 +1071,7 @@ async function loadMemberProfile() {
 }
 
 // ------------------------------
-// প্রোফাইল সংরক্ষণ
+// Save Profile
 // ------------------------------
 
 async function saveMemberProfile() {
@@ -1081,7 +1081,7 @@ async function saveMemberProfile() {
   if (!fullName) {
     showMessage(
       "profileMessage",
-      "সম্পূর্ণ নাম লিখুন",
+      "Enter your full name",
       "error"
     );
     return;
@@ -1101,7 +1101,7 @@ async function saveMemberProfile() {
         file.size > 2 * 1024 * 1024
       ) {
         throw new Error(
-          "JPG, PNG অথবা WEBP ছবি দিন (সর্বোচ্চ ২ MB)"
+          "JPG, PNG or WEBP image (maximum 2 MB)"
         );
       }
 
@@ -1140,7 +1140,7 @@ async function saveMemberProfile() {
 
     showMessage(
       "profileMessage",
-      "প্রোফাইল সফলভাবে সংরক্ষণ হয়েছে"
+      "Profile saved successfully"
     );
 
     await loadMemberProfile();
@@ -1148,7 +1148,7 @@ async function saveMemberProfile() {
   } catch (error) {
     showMessage(
       "profileMessage",
-      "সংরক্ষণ ব্যর্থ: " + error.message,
+      "Save failed: " + error.message,
       "error"
     );
   } finally {
@@ -1157,7 +1157,7 @@ async function saveMemberProfile() {
 }
 
 // ------------------------------
-// নোটিশ
+// Notice
 // ------------------------------
 
 async function loadNoticeTicker() {
@@ -1172,12 +1172,12 @@ async function loadNoticeTicker() {
     });
 
   if (error) {
-    ticker.textContent = "নোটিশ লোড করা যায়নি";
+    ticker.textContent = "Could not load notices";
     return;
   }
 
   if (!data?.length) {
-    ticker.textContent = "বর্তমানে কোনো নোটিশ নেই";
+    ticker.textContent = "There are no notices at the moment";
     return;
   }
 
@@ -1199,12 +1199,12 @@ async function loadNotices() {
 
   if (error) {
     area.textContent =
-      "নোটিশ লোড করা যায়নি: " + error.message;
+      "Could not load notices: " + error.message;
     return;
   }
 
   if (!data?.length) {
-    area.textContent = "বর্তমানে কোনো নোটিশ নেই";
+    area.textContent = "There are no notices at the moment";
     return;
   }
 
@@ -1238,7 +1238,7 @@ function showNoticeForm() {
 
 async function addNotice() {
   if (currentRole !== "admin") {
-    alert("শুধু অ্যাডমিন নোটিশ প্রকাশ করতে পারবেন");
+    alert("Only the Admin can publish notices");
     return;
   }
 
@@ -1248,7 +1248,7 @@ async function addNotice() {
   if (!title || !content) {
     showMessage(
       "noticeMsg",
-      "শিরোনাম ও বিবরণ লিখুন",
+      "Enter a title and description",
       "error"
     );
     return;
@@ -1276,7 +1276,7 @@ async function addNotice() {
 
     showMessage(
       "noticeMsg",
-      "নোটিশ সফলভাবে প্রকাশ হয়েছে"
+      "Notice published successfully"
     );
 
     await loadNoticeTicker();
@@ -1285,7 +1285,7 @@ async function addNotice() {
   } catch (error) {
     showMessage(
       "noticeMsg",
-      "প্রকাশ ব্যর্থ: " + error.message,
+      "Publish failed: " + error.message,
       "error"
     );
   } finally {
@@ -1294,7 +1294,7 @@ async function addNotice() {
 }
 
 // ------------------------------
-// লেনদেন
+// Transactions
 // ------------------------------
 
 async function loadTransactions() {
@@ -1309,7 +1309,7 @@ async function loadTransactions() {
 
     if (error) {
       records.innerHTML =
-        "<tr><td colspan='6'>সদস্যের তথ্য পাওয়া যায়নি: " +
+        "<tr><td colspan='6'>Member information not found: " +
         escapeHTML(error.message) +
         "</td></tr>";
       return;
@@ -1336,7 +1336,7 @@ async function loadTransactions() {
 
   if (error) {
     records.innerHTML =
-      "<tr><td colspan='6'>তথ্য লোড হয়নি: " +
+      "<tr><td colspan='6'>Could not load information: " +
       escapeHTML(error.message) +
       "</td></tr>";
     return;
@@ -1369,23 +1369,23 @@ async function loadTransactions() {
     const date = item.entry_date
       ? new Date(
           item.entry_date + "T00:00:00"
-        ).toLocaleDateString("bn-BD")
+        ).toLocaleDateString("en-GB")
       : "";
 
     const displayType = {
-      deposit: "জমা",
-      withdrawal: "উত্তোলন",
-      fee: "ফি",
-      expense: "খরচ",
-      fine: "জরিমানা"
-    }[type] || "অনির্ধারিত";
+      deposit: "Deposit",
+      withdrawal: "Withdrawal",
+      fee: "Fee",
+      expense: "Expense",
+      fine: "Fine"
+    }[type] || "Unspecified";
 
     const tr = document.createElement("tr");
 
     if (currentRole === "admin") {
       const memberCell = document.createElement("td");
       memberCell.textContent =
-        membersMap[item.member_id] || "সদস্য পাওয়া যায়নি";
+        membersMap[item.member_id] || "Member not found";
       tr.appendChild(memberCell);
     }
 
@@ -1415,7 +1415,7 @@ async function loadTransactions() {
       const td = document.createElement("td");
 
       const editBtn = document.createElement("button");
-      editBtn.textContent = "সম্পাদনা";
+      editBtn.textContent = "Edit";
       editBtn.onclick = () =>
         editTransaction(
           item.id,
@@ -1424,7 +1424,7 @@ async function loadTransactions() {
         );
 
       const deleteBtn = document.createElement("button");
-      deleteBtn.textContent = "মুছে ফেলুন";
+      deleteBtn.textContent = "Delete";
       deleteBtn.className = "danger";
       deleteBtn.onclick = () =>
         deleteTransaction(item.id);
@@ -1446,7 +1446,7 @@ async function editTransaction(id, oldAmount, oldDescription) {
   if (currentRole !== "admin") return;
 
   const amountText = prompt(
-    "নতুন টাকার পরিমাণ লিখুন:",
+    "Enter the new amount:",
     oldAmount
   );
 
@@ -1455,12 +1455,12 @@ async function editTransaction(id, oldAmount, oldDescription) {
   const amount = Number(amountText);
 
   if (!Number.isFinite(amount) || amount <= 0) {
-    alert("সঠিক টাকার পরিমাণ দিন");
+    alert("Enter a valid amount");
     return;
   }
 
   const description = prompt(
-    "নতুন বিবরণ লিখুন:",
+    "Enter the new description:",
     oldDescription
   );
 
@@ -1475,18 +1475,18 @@ async function editTransaction(id, oldAmount, oldDescription) {
     .eq("id", id);
 
   if (error) {
-    alert("পরিবর্তন হয়নি: " + error.message);
+    alert("Update failed: " + error.message);
     return;
   }
 
-  alert("লেনদেন সংশোধন হয়েছে");
+  alert("Transaction updated");
   await loadTransactions();
 }
 
 async function deleteTransaction(id) {
   if (currentRole !== "admin") return;
 
-  if (!confirm("আপনি কি এই লেনদেনটি মুছে ফেলতে চান?")) {
+  if (!confirm("Are you sure you want to delete this transaction?")) {
     return;
   }
 
@@ -1496,16 +1496,16 @@ async function deleteTransaction(id) {
     .eq("id", id);
 
   if (error) {
-    alert("মুছে ফেলা যায়নি: " + error.message);
+    alert("Could not delete: " + error.message);
     return;
   }
 
-  alert("লেনদেন মুছে ফেলা হয়েছে");
+  alert("Transaction deleted");
   await loadTransactions();
 }
 
 // ------------------------------
-// অ্যাডমিন: সদস্য তালিকা
+// Admin: Member List
 // ------------------------------
 
 async function loadAdminMembers() {
@@ -1586,7 +1586,7 @@ async function resetMemberPassword() {
   if (!userId || !password || password.length < 6) {
     showMessage(
       "resetMsg",
-      "সদস্য নির্বাচন করুন এবং কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন",
+      "Select a member and enter a password of at least 6 characters",
       "error"
     );
     return;
@@ -1603,7 +1603,7 @@ async function resetMemberPassword() {
   if (!validMemberId(memberCode)) {
     showMessage(
       "resetMsg",
-      "সঠিক সদস্য আইডি পাওয়া যায়নি",
+      "Valid member ID not found",
       "error"
     );
     return;
@@ -1628,7 +1628,7 @@ async function resetMemberPassword() {
 
     showMessage(
       "resetMsg",
-      data?.message || "পাসওয়ার্ড পরিবর্তন হয়েছে",
+      data?.message || "Password updated",
       "success"
     );
 
@@ -1639,7 +1639,7 @@ async function resetMemberPassword() {
 
     showMessage(
       "resetMsg",
-      "সমস্যা: " + error.message,
+      "Error: " + error.message,
       "error"
     );
 
@@ -1649,13 +1649,13 @@ async function resetMemberPassword() {
 }
 
 // ------------------------------
-// জমা ও উত্তোলন
+// Deposits and Withdrawals
 // ------------------------------
 
 
 async function addTransaction() {
   if (currentRole !== "admin") {
-    showMessage("adminMsg", "শুধু অ্যাডমিন লেনদেন যোগ করতে পারবেন।", "error");
+    showMessage("adminMsg", "Only the Admin can add transactions.", "error");
     return;
   }
 
@@ -1665,12 +1665,12 @@ async function addTransaction() {
   const description = $("note")?.value.trim() || "";
 
   if (!memberId || !Number.isFinite(amount) || amount <= 0) {
-    showMessage("adminMsg", "সদস্য ও সঠিক পরিমাণ দিন।", "error");
+    showMessage("adminMsg", "Enter a member and a valid amount.", "error");
     return;
   }
 
-  if (!["জমা", "উত্তোলন"].includes(kindValue)) {
-    showMessage("adminMsg", "লেনদেনের ধরন নির্বাচন করুন।", "error");
+  if (!["Deposit", "Withdrawal"].includes(kindValue)) {
+    showMessage("adminMsg", "Select a transaction type.", "error");
     return;
   }
 
@@ -1690,7 +1690,7 @@ async function addTransaction() {
       .insert({
         member_id: memberId,
         entry_date: entryDate,
-        kind: kindValue === "জমা" ? "deposit" : "withdrawal",
+        kind: kindValue === "Deposit" ? "deposit" : "withdrawal",
         amount: amount,
         description: description,
         created_by: currentUser.id
@@ -1698,7 +1698,7 @@ async function addTransaction() {
 
     if (error) throw error;
 
-    showMessage("adminMsg", "লেনদেন সফলভাবে সংরক্ষণ হয়েছে।", "success");
+    showMessage("adminMsg", "Transaction saved successfully.", "success");
 
     $("amount").value = "";
     $("note").value = "";
@@ -1707,7 +1707,7 @@ async function addTransaction() {
 
   } catch (error) {
     console.error("Transaction Error:", error);
-    showMessage("adminMsg", "লেনদেন সংরক্ষণ হয়নি: " + error.message, "error");
+    showMessage("adminMsg", "Transaction could not be saved: " + error.message, "error");
 
   } finally {
     if (btn) btn.disabled = false;
@@ -1716,12 +1716,12 @@ async function addTransaction() {
 
 
 // ------------------------------
-// অ্যাডমিন: প্রোফাইল তালিকা
+// Admin: Profile List
 // ------------------------------
 
 async function loadAdminProfiles() {
   const area = $("adminProfiles");
-  area.textContent = "সদস্যদের প্রোফাইল লোড হচ্ছে...";
+  area.textContent = "Loading member profiles...";
 
   const { data: profiles, error } = await supabaseClient
     .from("member_profiles")
@@ -1732,13 +1732,13 @@ async function loadAdminProfiles() {
 
   if (error) {
     area.textContent =
-      "প্রোফাইল লোড হয়নি: " + error.message;
+      "Could not load profiles: " + error.message;
     return;
   }
 
   if (!profiles?.length) {
     area.textContent =
-      "কোনো সদস্য প্রোফাইল পাওয়া যায়নি।";
+      "No member profiles found.";
     return;
   }
 
@@ -1754,24 +1754,24 @@ async function loadAdminProfiles() {
       <div class="member-card-top">
         ${
           photo
-            ? `<img class="profile-photo" src="${photo}" alt="সদস্যের ছবি">`
+            ? `<img class="profile-photo" src="${photo}" alt="Member Photo">`
             : ""
         }
         <div>
           <h4>${escapeHTML(profile.full_name)}</h4>
-          <p>${escapeHTML(profile.phone || "মোবাইল দেওয়া নেই")}</p>
+          <p>${escapeHTML(profile.phone || "No mobile number provided")}</p>
         </div>
       </div>
 
-      <p>ঠিকানা: ${escapeHTML(profile.address)}</p>
+      <p>Address: ${escapeHTML(profile.address)}</p>
 
       <p>
-        শিক্ষা: ${escapeHTML(profile.education)}
-        · পেশা: ${escapeHTML(profile.occupation)}
+        Education: ${escapeHTML(profile.education)}
+        · Occupation: ${escapeHTML(profile.occupation)}
       </p>
 
       <button type="button" class="edit-profile-btn">
-        ✎ প্রোফাইল সম্পাদনা
+        ✎ Edit Profile
       </button>
     `;
 
@@ -1800,7 +1800,7 @@ async function loadAdminProfiles() {
   $("editPhoto").value = "";
 
   $("editPhotoPreview").innerHTML = photo
-    ? `<img class="profile-photo" src="${photo}" alt="বর্তমান ছবি">`
+    ? `<img class="profile-photo" src="${photo}" alt="Current Photo">`
     : "";
 
   $("editMessage").textContent = "";
@@ -1823,7 +1823,7 @@ async function saveAdminProfileEdit() {
   if (!userId || !fullName) {
     showMessage(
       "editMessage",
-      "সদস্যের নাম প্রয়োজন",
+      "Member name is required",
       "error"
     );
     return;
@@ -1850,7 +1850,7 @@ async function saveAdminProfileEdit() {
         file.size > 2 * 1024 * 1024
       ) {
         throw new Error(
-          "JPG, PNG অথবা WEBP ছবি দিন (সর্বোচ্চ ২ MB)"
+          "JPG, PNG or WEBP image (maximum 2 MB)"
         );
       }
 
@@ -1893,7 +1893,7 @@ education: $("editEducation").value.trim(),
 
     showMessage(
       "editMessage",
-      "সদস্যের প্রোফাইল আপডেট হয়েছে"
+      "Member profile updated"
     );
 
     await loadAdminProfiles();
@@ -1901,7 +1901,7 @@ education: $("editEducation").value.trim(),
   } catch (error) {
     showMessage(
       "editMessage",
-      "আপডেট হয়নি: " + error.message,
+      "Update failed: " + error.message,
       "error"
     );
   } finally {
@@ -2029,7 +2029,7 @@ async function generateReports(){
 function printReports(){const html=$("reportResults").innerHTML;if(!html.trim()){alert("Generate a report first.");return;}const w=window.open("","_blank","width=800,height=700");if(!w){alert("Allow pop-ups.");return;}w.document.write(`<html><head><meta charset="utf-8"><title>RABETA Report</title></head><body><h2>RABETA BUSINESS FORUM — Report</h2>${html}<script>window.onload=()=>window.print();<\/script></body></html>`);w.document.close();}
 
 // ------------------------------
-// পাসওয়ার্ড ভুলে গেলে
+// Forgot Password
 // ------------------------------
 
 function showForgotPassword() {
@@ -2049,17 +2049,17 @@ async function submitPasswordRecovery() {
   if (!recoveryId) {
     showMessage(
       "recoveryMsg",
-      "ইমেইল অথবা সদস্য আইডি লিখুন",
+      "Enter your email or Member ID",
       "error"
     );
     return;
   }
 
-  // সদস্যদের pseudo-email-এ ইমেইল পাঠানো সম্ভব নয়।
+  // Emails cannot be sent to members’ pseudo-email addresses.
   if (validMemberId(recoveryId)) {
     showMessage(
       "recoveryMsg",
-      "সদস্যদের পাসওয়ার্ড রিসেটের জন্য অ্যাডমিনের সঙ্গে যোগাযোগ করুন।",
+      "Contact the Admin to reset a member password.",
       "error"
     );
     return;
@@ -2085,13 +2085,13 @@ btn.disabled = true;
 
     showMessage(
       "recoveryMsg",
-      "ইমেইলটি নিবন্ধিত থাকলে পাসওয়ার্ড রিসেটের লিংক পাঠানো হয়েছে।"
+      "If the email is registered, a password reset link has been sent."
     );
 
   } catch (error) {
     showMessage(
       "recoveryMsg",
-      "অনুরোধ পাঠানো যায়নি: " + error.message,
+      "Could not submit request: " + error.message,
       "error"
     );
   } finally {
@@ -2100,7 +2100,7 @@ btn.disabled = true;
 }
 
 // ------------------------------
-// নতুন পাসওয়ার্ড সেট
+// Set New Password
 // ------------------------------
 
 async function updateNewPassword() {
@@ -2110,7 +2110,7 @@ async function updateNewPassword() {
   if (password.length < 6) {
     showMessage(
       "resetPasswordMsg",
-      "কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড দিন",
+      "Enter a password with at least 6 characters",
       "error"
     );
     return;
@@ -2129,7 +2129,7 @@ try {
 
     showMessage(
       "resetPasswordMsg",
-      "পাসওয়ার্ড পরিবর্তন হয়েছে। এখন নতুন পাসওয়ার্ড দিয়ে লগইন করুন।"
+      "Password updated. Please log in with your new password."
     );
 
     $("newPassword").value = "";
@@ -2143,14 +2143,14 @@ try {
   } catch (error) {
     showMessage(
       "resetPasswordMsg",
-      "পাসওয়ার্ড পরিবর্তন হয়নি: " + error.message,
+      "Password could not be updated: " + error.message,
       "error"
     );
   }
   }
 // ------------------------------
 // ------------------------------
-// সব বাটনের ইভেন্ট
+// Button Event Handlers
 // ------------------------------
 
 function setupEventListeners() {
@@ -2266,7 +2266,7 @@ if ("serviceWorker" in navigator) {
 }
   
 // ------------------------------
-// ওয়েবসাইট চালু
+// Website Initialization
 // ------------------------------
 
 setupEventListeners();
