@@ -2036,37 +2036,178 @@ async function saveOrganizationTransaction(){
 }
 
 // Share Management
-async function loadShareData(){
-  const setting=await supabaseClient.from("share_settings").select("*").eq("id",1).maybeSingle();
-  if(setting.error)console.error(setting.error);
-  const price=Number(setting.data?.share_price||0);$("sharePriceView").textContent=taka(price);$("sharePriceInput").value=price||"";
-  $("shareAdminControls").classList.toggle("hidden",currentRole!=="admin");
-  let q=supabaseClient.from("share_transactions").select("*").order("entry_date",{ascending:false});
-  if(currentRole!=="admin")q=q.eq("member_id",currentUser.id);
-  const {data,error}=await q;const body=$("shareRecords");body.innerHTML="";
-  if(error){body.innerHTML=`<tr><td colspan="7">${escapeHTML(error.message)}</td></tr>`;return;}
-  const memberNames={};
-  if(currentRole==="admin"){
-    const {data:profiles}=await supabaseClient.from("profiles").select("id,member_id,full_name").eq("role","member");
-    (profiles||[]).forEach(p=>memberNames[p.id]=`${p.member_id} - ${p.full_name||"Member"}`);
+
+async function loadShareData() {
+  const setting = await supabaseClient
+    .from("share_settings")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (setting.error) console.error(setting.error);
+
+  const price = Number(setting.data?.share_price || 0);
+
+  $("sharePriceView").textContent = taka(price);
+  $("sharePriceInput").value = price || "";
+
+  $("shareAdminControls").classList.toggle(
+    "hidden",
+    currentRole !== "admin"
+  );
+
+  let q = supabaseClient
+    .from("share_transactions")
+    .select("*")
+    .order("entry_date", { ascending: false });
+
+  if (currentRole !== "admin") {
+    q = q.eq("member_id", currentUser.id);
   }
-  let my=0,total=0;
-  (data||[]).forEach(row=>{
-    const qty=Number(row.quantity||0),unit=Number(row.unit_price||0),delta=row.kind==="purchase"?qty:-qty;
-    total+=delta;if(row.member_id===currentUser.id)my+=delta;
-    const tr=document.createElement("tr");
-    [row.entry_date||"",row.member_id===currentUser.id?(currentProfile?.full_name||"Me"):(memberNames[row.member_id]||row.member_id),row.kind==="purchase"?"Purchase":"Cancellation",qty,taka(unit),taka(qty*unit)].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.appendChild(td);});
-    const td=document.createElement("td"),b=document.createElement("button");b.textContent="Print";b.className="light";
-    b.onclick=()=>printRabetaReceipt({title:"Share "+row.kind,date:row.entry_date,amount:qty*unit,quantity:qty,unitPrice:unit,receipt:row.receipt_number||row.id,description:row.description});td.appendChild(b);tr.appendChild(td);body.appendChild(tr);
+
+  const { data, error } = await q;
+  const body = $("shareRecords");
+  body.innerHTML = "";
+
+  if (error) {
+    body.innerHTML =
+      `<tr><td colspan="7">${escapeHTML(error.message)}</td></tr>`;
+    return;
+  }
+
+  const memberNames = {};
+
+  if (currentRole === "admin") {
+    const { data: profiles } = await supabaseClient
+      .from("profiles")
+      .select("id,member_id,full_name")
+      .eq("role", "member");
+
+    (profiles || []).forEach(p => {
+      memberNames[p.id] =
+        `${p.member_id} - ${p.full_name || "Member"}`;
+    });
+  }
+
+  let my = 0;
+  let total = 0;
+
+  (data || []).forEach(row => {
+    const qty = Number(row.quantity || 0);
+    const unit = Number(row.unit_price || 0);
+    const delta = row.kind === "purchase" ? qty : -qty;
+
+    total += delta;
+
+    if (row.member_id === currentUser.id) {
+      my += delta;
+    }
+
+    const tr = document.createElement("tr");
+
+    [
+      row.entry_date || "",
+      row.member_id === currentUser.id
+        ? (currentProfile?.full_name || "Me")
+        : (memberNames[row.member_id] || row.member_id),
+      row.kind === "purchase" ? "Purchase" : "Cancellation",
+      qty,
+      taka(unit),
+      taka(qty * unit)
+    ].forEach(value => {
+      const td = document.createElement("td");
+      td.textContent = value;
+      tr.appendChild(td);
+    });
+
+    const td = document.createElement("td");
+
+    const printBtn = document.createElement("button");
+    printBtn.textContent = "Print";
+    printBtn.className = "light";
+
+    printBtn.onclick = () => printRabetaReceipt({
+      title: "Share " + row.kind,
+      date: row.entry_date,
+      amount: qty * unit,
+      quantity: qty,
+      unitPrice: unit,
+      receipt: row.receipt_number || row.id,
+      description: row.description
+    });
+
+    td.appendChild(printBtn);
+
+    if (currentRole === "admin") {
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.className = "danger";
+      removeBtn.style.marginLeft = "6px";
+
+      removeBtn.onclick = () => deleteShareTransaction(row.id);
+
+      td.appendChild(removeBtn);
+    }
+
+    tr.appendChild(td);
+    body.appendChild(tr);
   });
-  $("shareQuantityView").textContent=String(currentRole==="admin"?total:my);$("shareValueView").textContent=taka((currentRole==="admin"?total:my)*price);
-  $("shareHistoryTitle").textContent=currentRole==="admin"?"সকল শেয়ার লেনদেন":"আমার শেয়ারের ইতিহাস";
-  if(currentRole==="admin"){
-    const {data:members,error:me}=await supabaseClient.from("profiles").select("id,member_id,full_name").eq("role","member").order("member_id");
-    const select=$("shareMemberSelect");select.innerHTML='<option value="">Select member</option>';
-    if(!me)(members||[]).forEach(m=>{const o=document.createElement("option");o.value=m.id;o.textContent=`${m.member_id} - ${m.full_name||"Member"}`;select.appendChild(o);});
+
+  $("shareQuantityView").textContent =
+    String(currentRole === "admin" ? total : my);
+
+  $("shareValueView").textContent =
+    taka((currentRole === "admin" ? total : my) * price);
+
+  $("shareHistoryTitle").textContent =
+    currentRole === "admin"
+      ? "সকল শেয়ার লেনদেন"
+      : "আমার শেয়ারের ইতিহাস";
+
+  if (currentRole === "admin") {
+    const { data: members, error: me } = await supabaseClient
+      .from("profiles")
+      .select("id,member_id,full_name")
+      .eq("role", "member")
+      .order("member_id");
+
+    const select = $("shareMemberSelect");
+    select.innerHTML = '<option value="">Select member</option>';
+
+    if (!me) {
+      (members || []).forEach(m => {
+        const option = document.createElement("option");
+        option.value = m.id;
+        option.textContent =
+          `${m.member_id} - ${m.full_name || "Member"}`;
+        select.appendChild(option);
+      });
+    }
   }
 }
+
+async function deleteShareTransaction(id) {
+  if (currentRole !== "admin") return;
+
+  if (!confirm("আপনি কি এই শেয়ার লেনদেনটি মুছে ফেলতে চান?")) {
+    return;
+  }
+
+  const { error } = await supabaseClient
+    .from("share_transactions")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("মুছে ফেলা যায়নি: " + error.message);
+    return;
+  }
+
+  alert("শেয়ার লেনদেন মুছে ফেলা হয়েছে।");
+
+  await loadShareData();
+}
+
 async function saveSharePrice(){
   if(currentRole!=="admin")return;const price=Number($("sharePriceInput").value);
   if(!Number.isFinite(price)||price<=0){showMessage("shareSettingsMsg","Enter a valid share price.","error");return;}
