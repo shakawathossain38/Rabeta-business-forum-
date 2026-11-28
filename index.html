@@ -1968,8 +1968,38 @@ async function loadShareData(){
     total+=delta;if(row.member_id===currentUser.id)my+=delta;
     const tr=document.createElement("tr");
     [row.entry_date||"",row.member_id===currentUser.id?(currentProfile?.full_name||"Me"):(memberNames[row.member_id]||row.member_id),row.kind==="purchase"?"Purchase":"Cancellation",qty,taka(unit),taka(qty*unit)].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.appendChild(td);});
-    const td=document.createElement("td"),b=document.createElement("button");b.textContent="Print";b.className="light";
-    b.onclick=()=>printRabetaReceipt({title:"Share "+row.kind,date:row.entry_date,amount:qty*unit,quantity:qty,unitPrice:unit,receipt:row.receipt_number||row.id,description:row.description});td.appendChild(b);tr.appendChild(td);body.appendChild(tr);
+   const td = document.createElement("td");
+
+// Print button
+const b = document.createElement("button");
+b.textContent = "Print";
+b.className = "light";
+b.onclick = () => printRabetaReceipt({
+  title: "Share " + row.kind,
+  date: row.entry_date,
+  amount: qty * unit,
+  quantity: qty,
+  unitPrice: unit,
+  receipt: row.receipt_number || row.id,
+  description: row.description
+});
+td.appendChild(b);
+
+// Remove button (Admin only)
+if (currentRole === "admin") {
+  const removeBtn = document.createElement("button");
+  removeBtn.textContent = "Remove";
+  removeBtn.className = "light";
+  removeBtn.style.marginLeft = "6px";
+  removeBtn.style.color = "red";
+
+  removeBtn.onclick = () => deleteShareTransaction(row.id);
+
+  td.appendChild(removeBtn);
+}
+
+tr.appendChild(td);
+body.appendChild(tr);
   });
   $("shareQuantityView").textContent=String(currentRole==="admin"?total:my);$("shareValueView").textContent=taka((currentRole==="admin"?total:my)*price);
   $("shareHistoryTitle").textContent=currentRole==="admin"?"সকল শেয়ার লেনদেন":"আমার শেয়ারের ইতিহাস";
