@@ -1548,6 +1548,52 @@ async function editTransaction(id, oldAmount, oldDescription) {
     return;
   }
 
+  const quantityText = prompt(
+    "শেয়ার সংখ্যা লিখুন (1–5):",
+    "1"
+  );
+
+  if (quantityText === null) return;
+
+  const shareQuantity = Number(quantityText);
+
+  if (
+    !Number.isInteger(shareQuantity) ||
+    shareQuantity < 1 ||
+    shareQuantity > 5
+  ) {
+    alert("শেয়ার সংখ্যা ১ থেকে ৫-এর মধ্যে হতে হবে");
+    return;
+  }
+
+  const fineText = prompt(
+    "জরিমানার পরিমাণ লিখুন:",
+    "0"
+  );
+
+  if (fineText === null) return;
+
+  const fine = Number(fineText);
+
+  if (!Number.isFinite(fine) || fine < 0) {
+    alert("সঠিক জরিমানার পরিমাণ দিন");
+    return;
+  }
+
+  const paymentMethod = prompt(
+    "Payment Method লিখুন: cash / nagad / bkash / bank",
+    "cash"
+  );
+
+  if (paymentMethod === null) return;
+
+  const method = paymentMethod.trim().toLowerCase();
+
+  if (!["cash", "nagad", "bkash", "bank"].includes(method)) {
+    alert("সঠিক Payment Method লিখুন");
+    return;
+  }
+
   const description = prompt(
     "নতুন বিবরণ লিখুন:",
     oldDescription
@@ -1558,8 +1604,11 @@ async function editTransaction(id, oldAmount, oldDescription) {
   const { error } = await supabaseClient
     .from("transactions")
     .update({
-      amount,
-      description
+      amount: amount,
+      share_quantity: shareQuantity,
+      fine: fine,
+      payment_method: method,
+      description: description.trim()
     })
     .eq("id", id);
 
@@ -1571,7 +1620,6 @@ async function editTransaction(id, oldAmount, oldDescription) {
   alert("লেনদেন সংশোধন হয়েছে");
   await loadTransactions();
 }
-
 async function deleteTransaction(id) {
   if (currentRole !== "admin") return;
 
