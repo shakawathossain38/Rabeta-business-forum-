@@ -1553,7 +1553,7 @@ async function editTransaction(id, oldAmount, oldQuantity, oldFine, oldPaymentMe
 
   const quantityText = prompt(
     "শেয়ার সংখ্যা লিখুন (1–5):",
-    "1"
+    oldQuantity
   );
 
   if (quantityText === null) return;
@@ -1571,7 +1571,7 @@ async function editTransaction(id, oldAmount, oldQuantity, oldFine, oldPaymentMe
 
   const fineText = prompt(
     "জরিমানার পরিমাণ লিখুন:",
-    "0"
+    oldFine
   );
 
   if (fineText === null) return;
@@ -1585,7 +1585,7 @@ async function editTransaction(id, oldAmount, oldQuantity, oldFine, oldPaymentMe
 
   const paymentMethod = prompt(
     "Payment Method লিখুন: cash / nagad / bkash / bank",
-    "cash"
+    oldPaymentMethod
   );
 
   if (paymentMethod === null) return;
@@ -1623,6 +1623,8 @@ async function editTransaction(id, oldAmount, oldQuantity, oldFine, oldPaymentMe
   alert("লেনদেন সংশোধন হয়েছে");
   await loadTransactions();
 }
+
+
 async function deleteTransaction(id) {
   if (currentRole !== "admin") return;
 
@@ -1643,7 +1645,6 @@ async function deleteTransaction(id) {
   alert("লেনদেন মুছে ফেলা হয়েছে");
   await loadTransactions();
 }
-
 // ------------------------------
 // অ্যাডমিন: সদস্য তালিকা
 // ------------------------------
