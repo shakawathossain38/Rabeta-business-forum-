@@ -2437,6 +2437,33 @@ async function saveShareTransaction() {
   await loadShareData();
 }
 
+async function deleteShareTransaction(id) {
+  if (currentRole !== "admin") return;
+
+  if (!confirm("Are you sure you want to delete this share transaction?")) {
+    return;
+  }
+
+  const { data, error } = await supabaseClient.rpc(
+    "admin_delete_share_transaction",
+    {
+      p_transaction_id: id
+    }
+  );
+
+  if (error) {
+    alert("Delete failed: " + error.message);
+    return;
+  }
+
+  alert(
+    "Share transaction deleted successfully. Updated shares: " +
+    data.current_shares
+  );
+
+  await loadShareData();
+}
+
 // Receipts and reports
 function printRabetaReceipt(info){
   const w=window.open("","_blank","width=700,height=750");if(!w){alert("Allow pop-ups to print receipts.");return;}
