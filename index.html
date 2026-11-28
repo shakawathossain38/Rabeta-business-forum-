@@ -2196,67 +2196,121 @@ async function saveOrganizationTransaction(){
 }
 
 // Share Management
-async function loadShareData(){
-  const setting=await supabaseClient.from("share_settings").select("*").eq("id",1).maybeSingle();
-  if(setting.error)console.error(setting.error);
-  const price=Number(setting.data?.share_price||0);$("sharePriceView").textContent=taka(price);$("sharePriceInput").value=price||"";
-  $("shareAdminControls").classList.toggle("hidden",currentRole!=="admin");
-  let q=supabaseClient.from("share_transactions").select("*").order("entry_date",{ascending:false});
-  if(currentRole!=="admin")q=q.eq("member_id",currentUser.id);
-  const {data,error}=await q;const body=$("shareRecords");body.innerHTML="";
-  if(error){body.innerHTML=`<tr><td colspan="7">${escapeHTML(error.message)}</td></tr>`;return;}
-  const memberNames={};
-  if(currentRole==="admin"){
-    const {data:profiles}=await supabaseClient.from("profiles").select("id,member_id,full_name").eq("role","member");
-    (profiles||[]).forEach(p=>memberNames[p.id]=`${p.member_id} - ${p.full_name||"Member"}`);
+
+async function loadShareData() {
+  const setting = await supabaseClient
+    .from("share_settings")
+    .select("*")
+    .eq("id", 1)
+    .maybeSingle();
+
+  if (setting.error) {
+    console.error(setting.error);
   }
-  let my=0,total=0;
-  (data||[]).forEach(row=>{
-    const qty=Number(row.quantity||0),unit=Number(row.unit_price||0),delta=row.kind==="purchase"?qty:-qty;
-    total+=delta;if(row.member_id===currentUser.id)my+=delta;
-    const tr=document.createElement("tr");
-    [row.entry_date||"",row.member_id===currentUser.id?(currentProfile?.full_name||"Me"):(memberNames[row.member_id]||row.member_id),row.kind==="purchase"?"Purchase":"Cancellation",qty,taka(unit),taka(qty*unit)].forEach(v=>{const td=document.createElement("td");td.textContent=v;tr.appendChild(td);});
-   const td = document.createElement("td");
 
-// Print button
-const b = document.createElement("button");
-b.textContent = "Print";
-b.className = "light";
-b.onclick = () => printRabetaReceipt({
-  title: "Share " + row.kind,
-  date: row.entry_date,
-  amount: qty * unit,
-  quantity: qty,
-  unitPrice: unit,
-  receipt: row.receipt_number || row.id,
-  description: row.description
-});
-td.appendChild(b);
+  const price = Number(setting.data?.share_price || 20200);
 
-// Remove button (Admin only)
-if (currentRole === "admin") {
-  const removeBtn = document.createElement("button");
-  removeBtn.textContent = "Remove";
-  removeBtn.className = "light";
-  removeBtn.style.marginLeft = "6px";
-  removeBtn.style.color = "red";
+  $("sharePriceView").textContent = taka(price);
 
-  removeBtn.onclick = () => deleteShareTransaction(row.id);
+  if ($("sharePriceInput")) {
+    $("sharePriceInput").value = price;
+  }
 
-  td.appendChild(removeBtn);
-}
+  $("shareAdminControls").classList.toggle(
+    "hidden",
+    currentRole !== "admin"
+  );
 
-tr.appendChild(td);
-body.appendChild(tr);
+  // Load member share quantities from profiles
+  const { data: profiles, error: profileError } =
+    await supabaseClient
+      .from("profiles")
+      .select("id, member_id, full_name, share_quantity")
+      .eq("role", "member");
+
+  const body = $("shareRecords");
+  body.innerHTML = "";
+
+  if (profileError) {
+    body.innerHTML =
+      `<tr><td colspan="7">${escapeHTML(profileError.message)}</td></tr>`;
+    return;
+  }
+
+  let my = 0;
+  let total = 0;
+
+  (profiles || []).forEach(member => {
+    const qty = Number(member.share_quantity || 0);
+
+    total += qty;
+
+    if (member.id === currentUser.id) {
+      my = qty;
+    }
+
+    if (currentRole === "admin" || member.id === currentUser.id) {
+      const tr = document.createElement("tr");
+
+      const values = [
+        "January 2026",
+        `${member.member_id} - ${member.full_name || "Member"}`,
+        "Share Capital",
+        qty,
+        taka(price),
+        taka(qty * price),
+        "—"
+      ];
+
+      values.forEach(value => {
+        const td = document.createElement("td");
+        td.textContent = value;
+        tr.appendChild(td);
+      });
+
+      body.appendChild(tr);
+    }
   });
-  $("shareQuantityView").textContent=String(currentRole==="admin"?total:my);$("shareValueView").textContent=taka((currentRole==="admin"?total:my)*price);
-  $("shareHistoryTitle").textContent=currentRole==="admin"?"সকল শেয়ার লেনদেন":"আমার শেয়ারের ইতিহাস";
-  if(currentRole==="admin"){
-    const {data:members,error:me}=await supabaseClient.from("profiles").select("id,member_id,full_name").eq("role","member").order("member_id");
-    const select=$("shareMemberSelect");select.innerHTML='<option value="">Select member</option>';
-    if(!me)(members||[]).forEach(m=>{const o=document.createElement("option");o.value=m.id;o.textContent=`${m.member_id} - ${m.full_name||"Member"}`;select.appendChild(o);});
+
+  const displayedShares =
+    currentRole === "admin" ? total : my;
+
+  $("shareQuantityView").textContent =
+    String(displayedShares);
+
+  $("shareValueView").textContent =
+    taka(displayedShares * price);
+
+  $("shareHistoryTitle").textContent =
+    currentRole === "admin"
+      ? "সকল সদস্যের শেয়ার"
+      : "আমার শেয়ারের বিবরণ";
+
+  if (currentRole === "admin") {
+    const { data: members, error: memberError } =
+      await supabaseClient
+        .from("profiles")
+        .select("id, member_id, full_name")
+        .eq("role", "member")
+        .order("member_id");
+
+    const select = $("shareMemberSelect");
+
+    select.innerHTML =
+      '<option value="">Select member</option>';
+
+    if (!memberError) {
+      (members || []).forEach(member => {
+        const option = document.createElement("option");
+        option.value = member.id;
+        option.textContent =
+          `${member.member_id} - ${member.full_name || "Member"}`;
+        select.appendChild(option);
+      });
+    }
   }
 }
+
 async function saveSharePrice(){
   if(currentRole!=="admin")return;const price=Number($("sharePriceInput").value);
   if(!Number.isFinite(price)||price<=0){showMessage("shareSettingsMsg","Enter a valid share price.","error");return;}
