@@ -724,7 +724,10 @@ async function signIn() {
     if (error) throw error;
     currentUser = data.user;
     const { data: profile, error: profileError } = await supabaseClient
-      .from("profiles").select("role,is_active").eq("id", currentUser.id).single();
+      .from("profiles")
+.select("role,is_active,full_name")
+.eq("id", currentUser.id)
+.single();
     if (profileError || !profile) {
       await supabaseClient.auth.signOut(); currentUser = null;
       throw new Error("Account profile not found.");
