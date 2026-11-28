@@ -1700,29 +1700,43 @@ async function resetMemberPassword() {
 // ------------------------------
 
 
+
 async function addTransaction() {
   if (currentRole !== "admin") {
-    showMessage("adminMsg", "শুধু অ্যাডমিন লেনদেন যোগ করতে পারবেন।", "error");
+    showMessage("adminMsg", "Only Admin can add transactions.", "error");
     return;
   }
 
-  const memberId = $("memberId")?.value;
-  const amount = Number($("amount")?.value);
-  const kindValue = $("kind")?.value;
-  const description = $("note")?.value.trim() || "";
+  const memberId = $("memberId").value;
+  const amount = Number($("amount").value);
+  const shareQuantity = Number($("shareQuantity").value);
+  const kindValue = $("kind").value;
+  const fine = Number($("fine").value || 0);
+  const paymentMethod = $("paymentMethod").value;
+  const description = $("note").value.trim();
 
   if (!memberId || !Number.isFinite(amount) || amount <= 0) {
-    showMessage("adminMsg", "সদস্য ও সঠিক পরিমাণ দিন।", "error");
+    showMessage("adminMsg", "Select member and enter valid amount.", "error");
+    return;
+  }
+
+  if (!Number.isInteger(shareQuantity) || shareQuantity < 1 || shareQuantity > 5) {
+    showMessage("adminMsg", "Share quantity must be between 1 and 5.", "error");
+    return;
+  }
+
+  if (!Number.isFinite(fine) || fine < 0) {
+    showMessage("adminMsg", "Enter a valid fine amount.", "error");
     return;
   }
 
   if (!["জমা", "উত্তোলন"].includes(kindValue)) {
-    showMessage("adminMsg", "লেনদেনের ধরন নির্বাচন করুন।", "error");
+    showMessage("adminMsg", "Select transaction type.", "error");
     return;
   }
 
   const btn = $("transactionBtn");
-  if (btn) btn.disabled = true;
+  btn.disabled = true;
 
   try {
     const entryDate = new Intl.DateTimeFormat("en-CA", {
@@ -1739,25 +1753,30 @@ async function addTransaction() {
         entry_date: entryDate,
         kind: kindValue === "জমা" ? "deposit" : "withdrawal",
         amount: amount,
+        share_quantity: shareQuantity,
+        fine: fine,
+        payment_method: paymentMethod,
         description: description,
         created_by: currentUser.id
       });
 
     if (error) throw error;
 
-    showMessage("adminMsg", "লেনদেন সফলভাবে সংরক্ষণ হয়েছে।", "success");
+    showMessage("adminMsg", "Transaction saved successfully.", "success");
 
     $("amount").value = "";
+    $("shareQuantity").value = "1";
+    $("fine").value = "0";
     $("note").value = "";
 
     await loadTransactions();
 
   } catch (error) {
     console.error("Transaction Error:", error);
-    showMessage("adminMsg", "লেনদেন সংরক্ষণ হয়নি: " + error.message, "error");
+    showMessage("adminMsg", "Transaction failed: " + error.message, "error");
 
   } finally {
-    if (btn) btn.disabled = false;
+    btn.disabled = false;
   }
 }
 
