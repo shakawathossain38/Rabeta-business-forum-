@@ -2197,6 +2197,7 @@ async function saveOrganizationTransaction(){
 
 // Share Management
 
+
 async function loadShareData() {
   const setting = await supabaseClient
     .from("share_settings")
@@ -2221,12 +2222,18 @@ async function loadShareData() {
     currentRole !== "admin"
   );
 
-  // Load member share quantities from profiles
+  // Load member profiles
+  let profileQuery = supabaseClient
+    .from("profiles")
+    .select("id, member_id, full_name, share_quantity")
+    .eq("role", "member");
+
+  if (currentRole !== "admin") {
+    profileQuery = profileQuery.eq("id", currentUser.id);
+  }
+
   const { data: profiles, error: profileError } =
-    await supabaseClient
-      .from("profiles")
-      .select("id, member_id, full_name, share_quantity")
-      .eq("role", "member");
+    await profileQuery.order("member_id");
 
   const body = $("shareRecords");
   body.innerHTML = "";
@@ -2240,36 +2247,100 @@ async function loadShareData() {
   let my = 0;
   let total = 0;
 
+  const memberNames = {};
+
   (profiles || []).forEach(member => {
     const qty = Number(member.share_quantity || 0);
 
     total += qty;
+    memberNames[member.id] =
+      `${member.member_id} - ${member.full_name || "Member"}`;
 
     if (member.id === currentUser.id) {
       my = qty;
     }
+  });
 
-    if (currentRole === "admin" || member.id === currentUser.id) {
-      const tr = document.createElement("tr");
+  // Load actual share transaction history
+  let transactionQuery = supabaseClient
+    .from("share_transactions")
+    .select("*")
+    .order("entry_date", { ascending: false });
 
-      const values = [
-        "January 2026",
-        `${member.member_id} - ${member.full_name || "Member"}`,
-        "Share Capital",
-        qty,
-        taka(price),
-        taka(qty * price),
-        "—"
-      ];
+  if (currentRole !== "admin") {
+    transactionQuery = transactionQuery.eq(
+      "member_id",
+      currentUser.id
+    );
+  }
 
-      values.forEach(value => {
-        const td = document.createElement("td");
-        td.textContent = value;
-        tr.appendChild(td);
+  const { data: transactions, error: transactionError } =
+    await transactionQuery;
+
+  if (transactionError) {
+    body.innerHTML =
+      `<tr><td colspan="7">${escapeHTML(transactionError.message)}</td></tr>`;
+    return;
+  }
+
+  (transactions || []).forEach(row => {
+    const qty = Number(row.quantity || 0);
+    const unit = Number(row.unit_price || 0);
+
+    const tr = document.createElement("tr");
+
+    const values = [
+      row.entry_date || "",
+      memberNames[row.member_id] ||
+        (row.member_id === currentUser.id
+          ? currentProfile?.full_name || "Me"
+          : row.member_id),
+      row.kind === "purchase" ? "Purchase" : "Cancellation",
+      qty,
+      taka(unit),
+      taka(qty * unit)
+    ];
+
+    values.forEach(value => {
+      const td = document.createElement("td");
+      td.textContent = value;
+      tr.appendChild(td);
+    });
+
+    const actionCell = document.createElement("td");
+
+    const printBtn = document.createElement("button");
+    printBtn.textContent = "Print";
+    printBtn.className = "light";
+
+    printBtn.onclick = () => {
+      printRabetaReceipt({
+        title: "Share " + row.kind,
+        date: row.entry_date,
+        amount: qty * unit,
+        quantity: qty,
+        unitPrice: unit,
+        receipt: row.receipt_number || row.id,
+        description: row.description
       });
+    };
 
-      body.appendChild(tr);
+    actionCell.appendChild(printBtn);
+
+    if (currentRole === "admin") {
+      const removeBtn = document.createElement("button");
+      removeBtn.textContent = "Remove";
+      removeBtn.className = "light";
+      removeBtn.style.marginLeft = "6px";
+      removeBtn.style.color = "red";
+
+      removeBtn.onclick = () => deleteShareTransaction(row.id);
+
+      actionCell.appendChild(removeBtn);
     }
+
+    tr.appendChild(actionCell);
+    body.appendChild(tr);
   });
 
   const displayedShares =
@@ -2283,31 +2354,24 @@ async function loadShareData() {
 
   $("shareHistoryTitle").textContent =
     currentRole === "admin"
-      ? "সকল সদস্যের শেয়ার"
-      : "আমার শেয়ারের বিবরণ";
+      ? "Share Transaction History"
+      : "My Share Transaction History";
 
+  // Load members in Admin dropdown
   if (currentRole === "admin") {
-    const { data: members, error: memberError } =
-      await supabaseClient
-        .from("profiles")
-        .select("id, member_id, full_name")
-        .eq("role", "member")
-        .order("member_id");
-
     const select = $("shareMemberSelect");
 
     select.innerHTML =
       '<option value="">Select member</option>';
 
-    if (!memberError) {
-      (members || []).forEach(member => {
-        const option = document.createElement("option");
-        option.value = member.id;
-        option.textContent =
-          `${member.member_id} - ${member.full_name || "Member"}`;
-        select.appendChild(option);
-      });
-    }
+    (profiles || []).forEach(member => {
+      const option = document.createElement("option");
+      option.value = member.id;
+      option.textContent =
+        `${member.member_id} - ${member.full_name || "Member"}`;
+
+      select.appendChild(option);
+    });
   }
 }
 
@@ -2317,17 +2381,60 @@ async function saveSharePrice(){
   const {error}=await supabaseClient.from("share_settings").upsert({id:1,share_price:price,updated_by:currentUser.id,updated_at:new Date().toISOString()},{onConflict:"id"});
   if(error)showMessage("shareSettingsMsg",error.message,"error");else{showMessage("shareSettingsMsg","Share price updated.");await loadShareData();}
 }
-async function saveShareTransaction(){
-  if(currentRole!=="admin")return;const member_id=$("shareMemberSelect").value,kind=$("shareKind").value,quantity=Number($("shareQuantityInput").value),unit_price=Number($("sharePriceInput").value);
-  if(!member_id||!Number.isInteger(quantity)||quantity<1||!Number.isFinite(unit_price)||unit_price<=0){showMessage("shareTransactionMsg","Select member and enter valid quantity and price.","error");return;}
-  if(kind==="cancellation"){
-    const {data,error}=await supabaseClient.from("share_transactions").select("kind,quantity").eq("member_id",member_id);
-    if(error){showMessage("shareTransactionMsg",error.message,"error");return;}
-    const owned=(data||[]).reduce((n,r)=>n+(r.kind==="purchase"?1:-1)*Number(r.quantity),0);
-    if(quantity>owned){showMessage("shareTransactionMsg",`Member owns only ${owned} shares.`,"error");return;}
+
+async function saveShareTransaction() {
+  if (currentRole !== "admin") return;
+
+  const member_id = $("shareMemberSelect").value;
+  const kind = $("shareKind").value;
+  const quantity = Number($("shareQuantityInput").value);
+  const unit_price = Number($("sharePriceInput").value);
+  const description = $("shareDescription").value.trim();
+
+  if (
+    !member_id ||
+    !Number.isInteger(quantity) ||
+    quantity < 1 ||
+    !Number.isFinite(unit_price) ||
+    unit_price <= 0
+  ) {
+    showMessage(
+      "shareTransactionMsg",
+      "Select member and enter valid quantity and price.",
+      "error"
+    );
+    return;
   }
-  const {error}=await supabaseClient.from("share_transactions").insert({member_id,entry_date:rabetaDate(),kind,quantity,unit_price,description:$("shareDescription").value.trim(),created_by:currentUser.id});
-  if(error)showMessage("shareTransactionMsg",error.message,"error");else{showMessage("shareTransactionMsg","Share transaction saved.");$("shareQuantityInput").value="";$("shareDescription").value="";await loadShareData();}
+
+  const { data, error } = await supabaseClient.rpc(
+    "admin_save_share_transaction",
+    {
+      p_member_id: member_id,
+      p_kind: kind,
+      p_quantity: quantity,
+      p_unit_price: unit_price,
+      p_description: description
+    }
+  );
+
+  if (error) {
+    showMessage(
+      "shareTransactionMsg",
+      error.message,
+      "error"
+    );
+    return;
+  }
+
+  showMessage(
+    "shareTransactionMsg",
+    `Share transaction saved successfully. New share quantity: ${data.current_shares}`
+  );
+
+  $("shareQuantityInput").value = "";
+  $("shareDescription").value = "";
+
+  await loadShareData();
 }
 
 // Receipts and reports
