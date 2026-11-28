@@ -762,7 +762,7 @@ async function signedPhoto(path) {
 // লগইন
 // ------------------------------
 
- signIn() {
+async function signIn() {
   const loginId = $("loginId").value.trim();
   const password = $("password").value;
   if (!loginId || !password) return showMessage("loginMsg", "Member ID and password required.", "error");
