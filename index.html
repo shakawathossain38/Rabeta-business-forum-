@@ -460,11 +460,31 @@ header p{
   <button class="secondary" onclick="showHomePage()">
   ← হোমে ফিরুন
   </button>
+
 <div class="stats">
-<div class="stat"><span>মোট জমা</span><strong id="totalDeposit">৳ ০</strong></div>
-<div class="stat"><span>মোট উত্তোলন</span><strong id="totalWithdraw">৳ ০</strong></div>
-<div class="stat"><span>বর্তমান ব্যালেন্স</span><strong id="balance">৳ ০</strong></div>
+
+  <div class="stat">
+    <span>মোট Share Capital</span>
+    <strong id="totalShareCapital">৳ ০</strong>
+  </div>
+
+  <div class="stat">
+    <span>মোট জমা</span>
+    <strong id="totalDeposit">৳ ০</strong>
+  </div>
+
+  <div class="stat">
+    <span>মোট উত্তোলন</span>
+    <strong id="totalWithdraw">৳ ০</strong>
+  </div>
+
+  <div class="stat">
+    <span>বর্তমান ব্যালেন্স</span>
+    <strong id="balance">৳ ০</strong>
+  </div>
+
 </div>
+
 </section>
 <!-- এখানে নতুন কোড বসাবে -->
 <section class="card" id="balanceCard">
@@ -1537,13 +1557,26 @@ if (type === "withdrawal") {
     records.appendChild(tr);
   });
 
- const balance = deposit - withdraw;
 
-  $("totalDeposit").textContent = taka(deposit);
-  $("totalWithdraw").textContent = taka(withdraw);
-  $("balance").textContent = taka(balance);
-  $("balanceOnly").textContent = taka(balance);
+const balance = deposit - withdraw;
+
+let totalShareCapital = 0;
+
+(data || []).forEach(item => {
+  if (item.kind === "share_capital") {
+    totalShareCapital +=
+      Number(item.amount || 0) *
+      Number(item.share_quantity || 1);
+  }
+});
+
+$("totalShareCapital").textContent = taka(totalShareCapital);
+$("totalDeposit").textContent = taka(deposit);
+$("totalWithdraw").textContent = taka(withdraw);
+$("balance").textContent = taka(balance);
+$("balanceOnly").textContent = taka(balance);
 }
+
 
 async function editTransaction(id, oldAmount, oldQuantity, oldFine, oldPaymentMethod, oldDescription) {
   if (currentRole !== "admin") return;
