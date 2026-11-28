@@ -1427,15 +1427,13 @@ async function loadTransactions() {
 
     const type = String(item.kind || "").trim().toLowerCase();
 
-    if (type === "deposit") {
-      deposit += amount;
-      shareValue += totalShareValue;
-    }
+   if (type === "deposit") {
+  deposit += totalShareValue;
+}
 
-    if (type === "withdrawal") {
-      withdraw += amount;
-      shareValue -= totalShareValue;
-    }
+if (type === "withdrawal") {
+  withdraw += totalShareValue;
+}
 
     const date = item.entry_date
       ? new Date(item.entry_date + "T00:00:00")
@@ -1539,7 +1537,7 @@ async function loadTransactions() {
     records.appendChild(tr);
   });
 
-  const balance = deposit - withdraw + shareValue;
+ const balance = deposit - withdraw;
 
   $("totalDeposit").textContent = taka(deposit);
   $("totalWithdraw").textContent = taka(withdraw);
