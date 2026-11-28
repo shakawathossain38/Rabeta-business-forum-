@@ -600,7 +600,20 @@ header p{
 <label>ইমেইল ঠিকানা (ঐচ্ছিক)</label><input id="newMemberEmail" type="email">
 <p class="message">Member ID will be generated automatically.</p>
 <label>পাসওয়ার্ড</label><input id="newMemberPassword" type="password">
-<button id="createAccountBtn">অ্যাকাউন্ট তৈরি করুন</button><p id="createMsg" class="message"></p></div>
+<button id="createAccountBtn">অ্যাকাউন্ট তৈরি করুন</button>
+
+<hr>
+
+<h4>Bulk Member Account Creation</h4>
+<p class="message">
+Create all remaining RABETA member accounts automatically.
+</p>
+
+<button id="bulkCreateBtn" type="button">
+Create All Member Accounts
+</button>
+
+<p id="createMsg" class="message"></p></div>
 
 <div class="card"><h3>Member Account Management</h3><div id="adminMemberStatusList">Loading members...</div></div>
 
@@ -1716,6 +1729,53 @@ async function createMemberAccount() {
   finally { btn.disabled = false; }
 }
 
+async function bulkCreateMembers() {
+  if (currentRole !== "admin") return;
+
+  const btn = $("bulkCreateBtn");
+  if (!confirm("Create all remaining RABETA member accounts?")) return;
+
+  btn.disabled = true;
+
+  try {
+    const { data, error } =
+      await supabaseClient.functions.invoke("create-members", {
+        body: {}
+      });
+
+    if (error) throw error;
+    if (!data) throw new Error("No response from server.");
+
+    const result = data.results || {};
+
+    const message =
+      `Bulk account creation completed.\n` +
+      `Created: ${data.created_count ?? 0}\n` +
+      `Skipped: ${data.skipped_count ?? 0}\n` +
+      `Failed: ${data.failed_count ?? 0}`;
+
+    showMessage(
+      "createMsg",
+      message.replaceAll("\n", " | "),
+      data.failed_count > 0 ? "error" : "success"
+    );
+
+    console.log("Bulk creation result:", data);
+
+    await loadAdminMembers();
+    await loadAdminProfiles();
+
+  } catch (error) {
+    showMessage(
+      "createMsg",
+      "Bulk creation failed: " + error.message,
+      "error"
+    );
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 // ------------------------------
 
 async function resetMemberPassword() {
@@ -2361,7 +2421,10 @@ function setupEventListeners() {
     "click",
     createMemberAccount
   );
-
+$("bulkCreateBtn").addEventListener(
+  "click",
+  bulkCreateMembers
+);
   $("resetPasswordBtn").addEventListener(
     "click",
     resetMemberPassword
