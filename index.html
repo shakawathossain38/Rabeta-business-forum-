@@ -600,7 +600,51 @@ header p{
 
 <div class="card"><h3>সদস্যের পাসওয়ার্ড রিসেট</h3><label>সদস্য নির্বাচন</label><select id="resetMemberId"></select><label>নতুন পাসওয়ার্ড</label><input id="resetPassword" type="password"><button id="resetPasswordBtn">পাসওয়ার্ড পরিবর্তন</button><p id="resetMsg" class="message"></p></div>
 
-<div class="card"><h3>সদস্যের জমা/উত্তোলন যোগ করুন</h3><label>সদস্য নির্বাচন</label><select id="memberId"></select><label>পরিমাণ</label><input id="amount" type="number" min="1"><label>লেনদেনের ধরন</label><select id="kind"><option value="জমা">জমা</option><option value="উত্তোলন">উত্তোলন</option></select><label>বিবরণ</label><input id="note" placeholder="যেমন: মাসিক সঞ্চয়"><button id="transactionBtn">লেনদেন সংরক্ষণ</button><p id="adminMsg" class="message"></p></div>
+
+<div class="card">
+  <h3>সদস্যের জমা/উত্তোলন যোগ করুন</h3>
+
+  <label>সদস্য নির্বাচন</label>
+  <select id="memberId"></select>
+
+  <label>পরিমাণ (Amount)</label>
+  <input id="amount" type="number" min="1" placeholder="Enter amount">
+
+  <label>শেয়ার সংখ্যা (1–5)</label>
+  <select id="shareQuantity">
+    <option value="1">1 Share</option>
+    <option value="2">2 Shares</option>
+    <option value="3">3 Shares</option>
+    <option value="4">4 Shares</option>
+    <option value="5">5 Shares</option>
+  </select>
+
+  <label>লেনদেনের ধরন</label>
+  <select id="kind">
+    <option value="জমা">জমা (Deposit)</option>
+    <option value="উত্তোলন">উত্তোলন (Withdrawal)</option>
+  </select>
+
+  <label>লেনদেনের মাধ্যম</label>
+  <select id="paymentMethod">
+    <option value="cash">Cash</option>
+    <option value="nagad">Nagad</option>
+    <option value="bkash">bKash</option>
+    <option value="bank">Bank</option>
+  </select>
+
+  <label>জরিমানা (Fine)</label>
+  <input id="fine" type="number" min="0" value="0" placeholder="Fine amount">
+
+  <label>বিবরণ (Description)</label>
+  <input id="note" placeholder="যেমন: মাসিক সঞ্চয়">
+
+  <button id="transactionBtn" onclick="addTransaction()">
+    লেনদেন সংরক্ষণ
+  </button>
+
+  <p id="adminMsg" class="message"></p>
+</div>
 
 <div class="card"><h3>সদস্যদের প্রোফাইল সম্পাদনা</h3><div id="adminProfiles">লোড হচ্ছে...</div></div>
 <div class="card hidden" id="adminEditCard">
@@ -712,7 +756,7 @@ async function signedPhoto(path) {
 // লগইন
 // ------------------------------
 
-async function signIn() {
+ signIn() {
   const loginId = $("loginId").value.trim();
   const password = $("password").value;
   if (!loginId || !password) return showMessage("loginMsg", "Member ID and password required.", "error");
