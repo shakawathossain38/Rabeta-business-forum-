@@ -484,17 +484,23 @@ header p{
   <h3>লেনদেনের বিবরণ</h3>
   <div class="table-wrap">
     <table>
+
 <thead>
   <tr>
     <th id="memberHead" class="hidden">সদস্য</th>
     <th>তারিখ</th>
-    <th>ধরন</th>
-    <th>পরিমাণ</th>
+    <th>লেনদেনের ধরন</th>
+    <th>প্রতি শেয়ারের মূল্য</th>
+    <th>শেয়ার সংখ্যা</th>
+    <th>মোট শেয়ার মূল্য</th>
+    <th>জরিমানা</th>
+    <th>মাধ্যম</th>
     <th>বিবরণ</th>
     <th>রসিদ</th>
     <th id="adminActionHead" class="hidden">অ্যাকশন</th>
   </tr>
 </thead>
+
       <tbody id="records"></tbody>
     </table>
   </div>
@@ -1344,6 +1350,7 @@ async function addNotice() {
 // লেনদেন
 // ------------------------------
 
+
 async function loadTransactions() {
   const records = $("records");
   let membersMap = {};
@@ -1356,9 +1363,8 @@ async function loadTransactions() {
 
     if (error) {
       records.innerHTML =
-        "<tr><td colspan='6'>সদস্যের তথ্য পাওয়া যায়নি: " +
-        escapeHTML(error.message) +
-        "</td></tr>";
+        "<tr><td colspan='11'>সদস্যের তথ্য পাওয়া যায়নি: " +
+        escapeHTML(error.message) + "</td></tr>";
       return;
     }
 
@@ -1371,9 +1377,7 @@ async function loadTransactions() {
   let query = supabaseClient
     .from("transactions")
     .select("*")
-    .order("entry_date", {
-      ascending: false
-    });
+    .order("entry_date", { ascending: false });
 
   if (currentRole !== "admin") {
     query = query.eq("member_id", currentUser.id);
@@ -1383,49 +1387,65 @@ async function loadTransactions() {
 
   if (error) {
     records.innerHTML =
-      "<tr><td colspan='6'>তথ্য লোড হয়নি: " +
-      escapeHTML(error.message) +
-      "</td></tr>";
+      "<tr><td colspan='11'>তথ্য লোড হয়নি: " +
+      escapeHTML(error.message) + "</td></tr>";
     return;
   }
 
   let deposit = 0;
   let withdraw = 0;
+  let shareValue = 0;
 
   records.innerHTML = "";
 
   $("memberHead").classList.toggle(
-    "hidden",
-    currentRole !== "admin"
+    "hidden", currentRole !== "admin"
   );
 
   $("adminActionHead").classList.toggle(
-    "hidden",
-    currentRole !== "admin"
+    "hidden", currentRole !== "admin"
   );
 
   (data || []).forEach(item => {
     const amount = Number(item.amount || 0);
-    const type = String(item.kind || "")
-      .trim()
-      .toLowerCase();
+    const quantity = Number(item.share_quantity || 1);
+    const fine = Number(item.fine || 0);
+    const totalShareValue = amount * quantity;
 
-    if (type === "deposit") deposit += amount;
-    if (type === "withdrawal") withdraw += amount;
+    const type = String(item.kind || "").trim().toLowerCase();
+
+    if (type === "deposit") {
+      deposit += amount;
+      shareValue += totalShareValue;
+    }
+
+    if (type === "withdrawal") {
+      withdraw += amount;
+      shareValue -= totalShareValue;
+    }
 
     const date = item.entry_date
-      ? new Date(
-          item.entry_date + "T00:00:00"
-        ).toLocaleDateString("bn-BD")
+      ? new Date(item.entry_date + "T00:00:00")
+          .toLocaleDateString("bn-BD")
       : "";
 
-    const displayType = {
-      deposit: "জমা",
-      withdrawal: "উত্তোলন",
-      fee: "ফি",
-      expense: "খরচ",
-      fine: "জরিমানা"
-    }[type] || "অনির্ধারিত";
+    const displayType = type === "deposit"
+      ? "জমা (Deposit)"
+      : type === "withdrawal"
+        ? "উত্তোলন (Withdrawal)"
+        : type;
+
+    const methodNames = {
+      cash: "Cash",
+      nagad: "Nagad",
+      bkash: "bKash",
+      bank: "Bank",
+      rocket: "Rocket"
+    };
+
+    const paymentMethod =
+      methodNames[item.payment_method] ||
+      item.payment_method || "—";
 
     const tr = document.createElement("tr");
 
@@ -1436,28 +1456,48 @@ async function loadTransactions() {
       tr.appendChild(memberCell);
     }
 
-    [
+    const values = [
       date,
       displayType,
       taka(amount),
+      quantity,
+      taka(totalShareValue),
+      taka(fine),
+      paymentMethod,
       item.description || ""
-    ].forEach(value => {
+    ];
+
+    values.forEach(value => {
       const td = document.createElement("td");
       td.textContent = value;
       tr.appendChild(td);
     });
 
+    // Print Receipt
     const receiptTd = document.createElement("td");
     const receiptBtn = document.createElement("button");
+
     receiptBtn.textContent = "Print";
     receiptBtn.className = "light";
+
     receiptBtn.onclick = () => printRabetaReceipt({
-      title: displayType, date: item.entry_date, amount,
-      receipt: item.receipt_number || item.id, description: item.description
+      title: displayType,
+      date: item.entry_date,
+      amount: amount,
+      quantity: quantity,
+      unitPrice: amount,
+      receipt: item.receipt_number || item.id,
+      description:
+        "Share Value: " + taka(totalShareValue) +
+        " | Fine: " + taka(fine) +
+        " | Payment: " + paymentMethod +
+        " | " + (item.description || "")
     });
+
     receiptTd.appendChild(receiptBtn);
     tr.appendChild(receiptTd);
 
+    // Admin Edit and Delete
     if (currentRole === "admin") {
       const td = document.createElement("td");
 
@@ -1483,10 +1523,12 @@ async function loadTransactions() {
     records.appendChild(tr);
   });
 
+  const balance = deposit - withdraw + shareValue;
+
   $("totalDeposit").textContent = taka(deposit);
   $("totalWithdraw").textContent = taka(withdraw);
-  $("balance").textContent = taka(deposit - withdraw);
-  $("balanceOnly").textContent = taka(deposit - withdraw);
+  $("balance").textContent = taka(balance);
+  $("balanceOnly").textContent = taka(balance);
 }
 
 async function editTransaction(id, oldAmount, oldDescription) {
